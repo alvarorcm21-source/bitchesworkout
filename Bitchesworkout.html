@@ -1,0 +1,2412 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BitchesWorkout - Hipertrofia & Recomposición</title>
+
+    <!-- PWA Manifest & Iconos (Compatible con GitHub Pages y modo local) -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="./icon-192.png">
+    <link rel="apple-touch-icon" href="./icon-192.png">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#131c2e',
+                            900: '#0f172a',
+                            950: '#070b14',
+                        },
+                        accent: {
+                            400: '#e879f9',
+                            500: '#d946ef',
+                            600: '#c026d3',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b1120;
+            color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: none;
+        }
+
+        /* Ocultar scrollbars para UI limpia en móvil */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scroll {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Inputs nativos más limpios */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"], input[type="text"], select {
+            background-color: #162033;
+            color: #ffffff;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.25s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tab-active {
+            border-bottom: 2px solid #d946ef;
+            color: #e879f9 !important;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden text-slate-200">
+
+    <!-- HEADER / TEMPORIZADOR FIJO -->
+    <header class="bg-slate-950 px-4 py-3.5 shrink-0 shadow-md z-20 border-b border-slate-800/70">
+        <div class="flex justify-between items-center mb-3">
+            <h1 class="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 via-purple-400 to-pink-400 flex items-center gap-1.5">
+                <i class="ph ph-barbell text-fuchsia-400 text-2xl"></i> BitchesWorkout
+            </h1>
+            <div class="flex items-center gap-2">
+                <button onclick="openLibraryModal()" class="bg-slate-800/90 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-700/70 flex items-center gap-1.5 active:scale-95 transition">
+                    <i class="ph ph-books text-fuchsia-400 text-sm"></i> Guía Nippard
+                </button>
+                <div id="pwa-install-container" class="hidden">
+                    <button id="btn-install" class="bg-fuchsia-600/20 text-fuchsia-300 px-3 py-1.5 rounded-xl text-xs font-semibold border border-fuchsia-500/30">
+                        Instalar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TEMPORIZADOR DE DESCANSO (2 A 3 MIN INNEGOCIABLES EN SERIES PESADAS) -->
+        <div class="bg-slate-850 rounded-2xl p-3 flex flex-col gap-2 border border-slate-800/80">
+            <div class="flex justify-between items-center">
+                <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Descanso (2–3m Series Pesadas)</span>
+                <span id="timer-display" class="text-2xl font-black text-white font-mono tracking-widest">00:00</span>
+            </div>
+            <div class="grid grid-cols-5 gap-1.5">
+                <button onclick="startTimer(90)" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs sm:text-sm font-semibold transition active:scale-95 border border-slate-700/50">90s<br><span class="text-[9px] text-slate-400 font-normal">Aisl.</span></button>
+                <button onclick="startTimer(120)" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs sm:text-sm font-semibold transition active:scale-95 border border-fuchsia-500/30">2m<br><span class="text-[9px] text-fuchsia-300 font-normal">Pesado</span></button>
+                <button onclick="startTimer(150)" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs sm:text-sm font-semibold transition active:scale-95 border border-fuchsia-500/30">2:30<br><span class="text-[9px] text-fuchsia-300 font-normal">Comp.</span></button>
+                <button onclick="startTimer(180)" class="bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs sm:text-sm font-semibold transition active:scale-95 border border-fuchsia-500/30">3m<br><span class="text-[9px] text-fuchsia-300 font-normal">Máx</span></button>
+                <button onclick="stopTimer()" class="bg-red-900/25 text-red-400 hover:bg-red-900/40 py-2 rounded-xl text-sm font-semibold flex items-center justify-center transition active:scale-95 border border-red-500/20">
+                    <i class="ph ph-stop text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- NAVEGACIÓN PRINCIPAL (TABS) -->
+    <nav class="flex shrink-0 bg-slate-900 border-b border-slate-800">
+        <button onclick="switchTab('workout')" id="tab-workout" class="flex-1 py-3 text-sm font-semibold tab-active transition-colors text-slate-400">
+            <i class="ph ph-notebook text-lg block mb-0.5"></i> Rutina
+        </button>
+        <button onclick="switchTab('body')" id="tab-body" class="flex-1 py-3 text-sm font-semibold transition-colors text-slate-400">
+            <i class="ph ph-scales text-lg block mb-0.5"></i> Peso & Kcal
+        </button>
+        <button onclick="switchTab('analytics')" id="tab-analytics" class="flex-1 py-3 text-sm font-semibold transition-colors text-slate-400">
+            <i class="ph ph-chart-line-up text-lg block mb-0.5"></i> Analíticas
+        </button>
+    </nav>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="flex-1 overflow-y-auto hide-scroll pb-24 fade-in bg-[#0b1120]">
+
+        <!-- VISTA 1: RUTINA + COMBINAR SUPER SERIES -->
+        <div id="view-workout" class="p-4 space-y-5 max-w-2xl mx-auto">
+            <!-- Selector Semanal -->
+            <div class="flex gap-2 overflow-x-auto hide-scroll pb-1 -mx-4 px-4 snap-x">
+                <div id="days-container" class="flex gap-2"></div>
+            </div>
+
+            <!-- Cabecera del Día + Botón Combinar Ejercicios -->
+            <div id="routine-header" class="flex flex-wrap justify-between items-end gap-3">
+                <div class="min-w-0">
+                    <h2 id="routine-day-title" class="text-2xl font-extrabold text-white tracking-tight">Día 1: Lower A</h2>
+                    <p id="routine-day-desc" class="text-sm text-slate-400 mt-0.5">Glúteos e Isquios (≤ 90 min)</p>
+                </div>
+                <div id="routine-actions" class="flex items-center gap-2">
+                    <!-- Botones generados dinámicamente (Combinar ejercicios / Restaurar día) -->
+                </div>
+            </div>
+
+            <!-- Nota Rápida de Enfoque del Día (Tip de Control y Agarre) -->
+            <div id="day-tip-banner" class="hidden bg-fuchsia-950/25 border border-fuchsia-500/25 rounded-2xl px-3.5 py-2.5 text-xs text-slate-300 flex items-start gap-2.5">
+                <i class="ph ph-sparkle text-fuchsia-400 text-base shrink-0 mt-0.5"></i>
+                <span id="day-tip-text"></span>
+            </div>
+
+            <!-- Lista de Ejercicios del Día -->
+            <div id="exercises-list" class="space-y-4">
+                <!-- Generado dinámicamente por JS -->
+            </div>
+        </div>
+
+        <!-- VISTA 2: PESO CORPORAL, CALORÍAS Y PROTEÍNA (GANANCIA LIMPIA SIN GRASA) -->
+        <div id="view-body" class="hidden p-4 space-y-5 max-w-2xl mx-auto">
+            <div class="bg-[#131c2e] rounded-3xl p-5 border border-slate-800 space-y-4 shadow-sm">
+                <div class="flex justify-between items-start gap-2">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-white flex items-center gap-2">
+                            <i class="ph ph-sparkle text-fuchsia-400 text-xl"></i> Ganancia Limpia (Lean Bulk)
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Perfil base: 1.65 m · 59 kg · Músculo sin acumular grasa (Mantenimiento a +150 kcal)</p>
+                    </div>
+                    <span id="balance-badge" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 shrink-0">Sin registro hoy</span>
+                </div>
+
+                <!-- Mantenimiento Configurable -->
+                <div class="bg-slate-900/70 p-3 rounded-2xl border border-slate-800/80 flex items-center justify-between gap-3">
+                    <div>
+                        <span class="text-xs font-semibold text-slate-300 block">Calorías de Mantenimiento (TDEE)</span>
+                        <span class="text-[11px] text-slate-500">Zona óptima ganancia limpia: TDEE a +150 kcal · Meta proteína: ~115 g</span>
+                    </div>
+                    <div class="relative w-28 shrink-0">
+                        <input type="number" id="input-tdee" inputmode="numeric" onchange="saveTdeeConfig(this.value)" class="w-full text-sm font-bold p-2 pr-10 rounded-xl border border-slate-700/80 focus:outline-none focus:ring-1 focus:ring-fuchsia-500 text-right">
+                        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">kcal</span>
+                    </div>
+                </div>
+
+                <!-- Inputs del Día -->
+                <div class="grid grid-cols-3 gap-2.5">
+                    <div>
+                        <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide block mb-1.5">Peso Hoy</label>
+                        <div class="relative">
+                            <input type="number" id="input-bodyweight" inputmode="decimal" step="0.1" placeholder="59.0" class="w-full text-sm sm:text-base font-bold p-2.5 pr-8 rounded-xl border border-slate-700/80 focus:outline-none focus:ring-1 focus:ring-fuchsia-500">
+                            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-slate-400">kg</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide block mb-1.5">Calorías</label>
+                        <div class="relative">
+                            <input type="number" id="input-calories" inputmode="numeric" placeholder="2050" class="w-full text-sm sm:text-base font-bold p-2.5 pr-10 rounded-xl border border-slate-700/80 focus:outline-none focus:ring-1 focus:ring-fuchsia-500">
+                            <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">kcal</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide block mb-1.5">Proteína</label>
+                        <div class="relative">
+                            <input type="number" id="input-protein" inputmode="numeric" placeholder="115" class="w-full text-sm sm:text-base font-bold p-2.5 pr-7 rounded-xl border border-slate-700/80 focus:outline-none focus:ring-1 focus:ring-fuchsia-500">
+                            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-slate-400">g</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="saveBodyLog()" class="w-full py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white text-sm font-bold shadow-lg shadow-fuchsia-900/30 active:scale-95 transition flex justify-center items-center gap-2">
+                    <i class="ph ph-floppy-disk text-lg"></i> Guardar Registro de Hoy
+                </button>
+            </div>
+
+            <!-- Resumen Rápido -->
+            <div class="grid grid-cols-3 gap-2.5" id="body-summary-cards">
+                <!-- Generado por JS -->
+            </div>
+
+            <!-- Historial de Peso y Calorías -->
+            <div class="space-y-3">
+                <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2 px-1">
+                    <i class="ph ph-clock-counter-clockwise text-purple-400 text-lg"></i>
+                    Historial de Peso y Nutrición
+                </h3>
+                <div id="body-history-list" class="space-y-2.5">
+                    <!-- Generado por JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- VISTA 3: ANALÍTICAS (VOLUMEN TOTAL, PESO MÁXIMO, 1RM + FUERZA VS PESO CORPORAL) -->
+        <div id="view-analytics" class="hidden p-4 space-y-5 max-w-2xl mx-auto">
+            <div class="flex flex-col gap-3">
+                <div class="relative">
+                    <select id="chart-exercise-select" onchange="updateAnalyticsTab()" class="w-full bg-slate-900 text-white rounded-2xl px-4 py-3.5 font-semibold appearance-none border border-slate-700/80 outline-none focus:border-purple-500 text-sm">
+                        <!-- Opciones generadas por JS -->
+                    </select>
+                    <i class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                </div>
+            </div>
+
+            <!-- Contenedor Principal de Análisis (Volumen Total, 1RM Estimado, Peso Máximo y Desglose) -->
+            <div id="analytics-tab-content" class="space-y-5">
+                <!-- Generado por JS -->
+            </div>
+
+            <!-- Gráfica de Recomposición: Fuerza (1RM) vs. Peso Corporal -->
+            <div class="bg-[#0a101f] border border-slate-800/90 rounded-2xl p-4 shadow-lg space-y-3">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
+                            <i class="ph ph-trend-up text-emerald-400 text-base"></i> Fuerza (1RM) vs. Peso Corporal
+                        </h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Meta: subir tu 1RM mes a mes manteniendo el peso corporal estable o subiendo muy lento</p>
+                    </div>
+                </div>
+                <div id="recomp-chart-wrapper">
+                    <!-- Generado por JS -->
+                </div>
+            </div>
+
+            <!-- SECCIÓN DE BACKUP LOCAL -->
+            <div class="mt-6 p-4 bg-slate-900/70 rounded-2xl border border-slate-800 border-dashed">
+                <h3 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
+                    <i class="ph ph-database text-fuchsia-400 text-base"></i> Backup de Datos (Local)
+                </h3>
+                <p class="text-xs text-slate-400 mb-3.5">Exporta tu historial de entrenamientos, peso corporal, nutrición, super series personalizadas y cambios de rutina.</p>
+                <div class="flex gap-2">
+                    <button onclick="exportData()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold py-2.5 rounded-xl transition flex justify-center items-center gap-2 border border-slate-700/60">
+                        <i class="ph ph-export"></i> Exportar
+                    </button>
+                    <button onclick="document.getElementById('import-file').click()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold py-2.5 rounded-xl transition flex justify-center items-center gap-2 border border-slate-700/60">
+                        <i class="ph ph-import"></i> Importar
+                    </button>
+                    <input type="file" id="import-file" accept=".json" class="hidden" onchange="importData(event)">
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- NOTIFICACIÓN TIPO TOAST -->
+    <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-fuchsia-600 text-white px-5 py-3 rounded-full font-semibold text-sm shadow-xl shadow-fuchsia-950/50 transform transition-all duration-300 translate-y-24 opacity-0 z-50 pointer-events-none flex items-center gap-2 max-w-[90vw] whitespace-nowrap">
+        <i class="ph ph-check-circle text-xl shrink-0"></i>
+        <span id="toast-msg" class="truncate">Guardado correctamente</span>
+    </div>
+
+    <!-- MODAL: COMBINAR EJERCICIOS (CREADOR DE SUPER SERIES) -->
+    <div id="combine-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-50 hidden items-center justify-center p-3 sm:p-5">
+        <div class="bg-[#0f172a] w-full max-w-lg max-h-[90vh] rounded-3xl border border-purple-500/35 shadow-2xl flex flex-col overflow-hidden fade-in">
+            <div class="px-5 py-4 border-b border-slate-800 flex justify-between items-center bg-[#0d1424]">
+                <div>
+                    <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
+                        <i class="ph ph-link text-purple-400"></i> Combinar Ejercicios (Super Serie)
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Une dos ejercicios en subdivisiones a. y b. dentro de una sola tarjeta</p>
+                </div>
+                <button onclick="closeCombineModal()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-5 space-y-4 overflow-y-auto hide-scroll">
+                <!-- Ejercicio A -->
+                <div>
+                    <label class="text-xs font-bold uppercase tracking-wider text-purple-300 block mb-1.5">Ejercicio a. (De tu rutina de hoy)</label>
+                    <div class="relative">
+                        <select id="combine-slot-a" onchange="onCombineSlotAChange()" class="w-full text-sm font-semibold rounded-xl px-3.5 py-2.5 pr-8 border border-slate-700 focus:border-purple-500 outline-none appearance-none">
+                            <!-- Opciones generadas por JS -->
+                        </select>
+                        <i class="ph ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- Origen del Ejercicio B -->
+                <div>
+                    <label class="text-xs font-bold uppercase tracking-wider text-purple-300 block mb-2">¿Con qué ejercicio quieres combinarlo? (Ejercicio b.)</label>
+                    <div class="grid grid-cols-2 gap-2 p-1 bg-slate-900 rounded-xl border border-slate-800">
+                        <button type="button" id="combine-mode-today" onclick="setCombineMode('today')" class="py-2 px-2.5 rounded-lg text-xs font-bold transition">
+                            Otro de hoy
+                        </button>
+                        <button type="button" id="combine-mode-db" onclick="setCombineMode('db')" class="py-2 px-2.5 rounded-lg text-xs font-bold transition">
+                            De Guía Nippard
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Selector B: Otro de hoy -->
+                <div id="combine-b-today-box">
+                    <label class="text-[11px] font-semibold text-slate-400 block mb-1.5">Selecciona el segundo ejercicio de hoy</label>
+                    <div class="relative">
+                        <select id="combine-slot-b-today" onchange="autoFillCombineTitle()" class="w-full text-sm font-semibold rounded-xl px-3.5 py-2.5 pr-8 border border-slate-700 focus:border-purple-500 outline-none appearance-none">
+                            <!-- Opciones generadas por JS -->
+                        </select>
+                        <i class="ph ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- Selector B: Desde Guía Nippard -->
+                <div id="combine-b-db-box" class="hidden space-y-3">
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-400 block mb-1.5">Músculo del Ejercicio b.</label>
+                        <div class="relative">
+                            <select id="combine-b-muscle" onchange="populateCombineDbExercises()" class="w-full text-sm font-semibold rounded-xl px-3.5 py-2.5 pr-8 border border-slate-700 focus:border-purple-500 outline-none appearance-none">
+                                <!-- Músculos de nippardExerciseDB -->
+                            </select>
+                            <i class="ph ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-400 block mb-1.5">Ejercicio b. (Recomendado por Jeff Nippard)</label>
+                        <div class="relative">
+                            <select id="combine-b-exercise" onchange="autoFillCombineTitle()" class="w-full text-sm font-semibold rounded-xl px-3.5 py-2.5 pr-8 border border-slate-700 focus:border-purple-500 outline-none appearance-none">
+                                <!-- Ejercicios del músculo seleccionado -->
+                            </select>
+                            <i class="ph ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Título de la Super Serie -->
+                <div>
+                    <label class="text-[11px] font-semibold text-slate-400 block mb-1.5">Nombre de la Super Serie</label>
+                    <input type="text" id="combine-title" placeholder="Ej: Super Serie Cuádriceps + Isquios" class="w-full text-sm font-semibold rounded-xl px-3.5 py-2.5 border border-slate-700 focus:border-purple-500 outline-none">
+                </div>
+
+                <button onclick="confirmCombineExercises()" class="w-full py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white text-sm font-bold shadow-lg shadow-fuchsia-900/30 active:scale-95 transition flex justify-center items-center gap-2">
+                    <i class="ph ph-link text-lg"></i> Crear Super Serie
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE ANALÍTICAS RÁPIDAS POR EJERCICIO (IGUAL A LA REFERENCIA VISUAL) -->
+    <div id="exercise-analytics-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-50 hidden items-center justify-center p-3 sm:p-5">
+        <div class="bg-[#0f172a] w-full max-w-2xl max-h-[90vh] rounded-3xl border border-slate-800 shadow-2xl flex flex-col overflow-hidden fade-in">
+            <!-- Header Modal -->
+            <div class="px-5 py-4 border-b border-slate-800/80 flex justify-between items-start gap-3 shrink-0 bg-[#0d1424]">
+                <div>
+                    <h3 id="modal-ex-title" class="text-xl font-extrabold text-white tracking-tight">Ejercicio</h3>
+                    <p id="modal-ex-subtitle" class="text-xs text-slate-400 mt-1">0 sesiones · Mejor Volumen: -- · Mejor 1RM: --</p>
+                </div>
+                <button onclick="closeExerciseAnalyticsModal()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition active:scale-95 shrink-0">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
+            </div>
+            <!-- Cuerpo Deslizable -->
+            <div id="modal-analytics-body" class="p-4 sm:p-5 overflow-y-auto hide-scroll space-y-5">
+                <!-- Chart + Desglose por Fecha -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: BIBLIOTECA DE EJERCICIOS JEFF NIPPARD -->
+    <div id="library-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-50 hidden items-center justify-center p-3 sm:p-5">
+        <div class="bg-[#0f172a] w-full max-w-2xl max-h-[88vh] rounded-3xl border border-slate-800 shadow-2xl flex flex-col overflow-hidden fade-in">
+            <div class="px-5 py-4 border-b border-slate-800 flex justify-between items-center bg-[#0d1424]">
+                <div>
+                    <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
+                        <i class="ph ph-books text-fuchsia-400"></i> Base de Datos Jeff Nippard
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Ejercicios S-Tier y A-Tier clasificados por músculo (con tips de estabilidad)</p>
+                </div>
+                <button onclick="closeLibraryModal()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
+            </div>
+            <div class="p-4 border-b border-slate-800/70 bg-slate-900/50">
+                <select id="library-muscle-filter" onchange="renderLibraryList()" class="w-full rounded-xl px-3.5 py-2.5 text-sm font-semibold border border-slate-700 outline-none focus:border-purple-500">
+                    <!-- Generado por JS -->
+                </select>
+            </div>
+            <div id="library-list" class="p-4 overflow-y-auto hide-scroll space-y-3">
+                <!-- Generado por JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE READINESS (AUTORREGULACIÓN) -->
+    <div id="readiness-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex-col justify-end sm:justify-center items-center p-4">
+        <div class="bg-slate-900 w-full max-w-md rounded-3xl p-6 border border-slate-800 shadow-2xl transform transition-transform translate-y-full" id="readiness-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2"><i class="ph ph-battery-charging text-fuchsia-400"></i> Readiness Score</h3>
+                <button onclick="closeReadinessModal()" class="text-slate-400 hover:text-white"><i class="ph ph-x text-2xl"></i></button>
+            </div>
+            <p class="text-sm text-slate-400 mb-6">Evalúa tu energía y recuperación de hoy para autorregular la intensidad (Curva SRA).</p>
+
+            <div class="space-y-6">
+                <div>
+                    <label class="flex justify-between text-sm font-semibold text-white mb-2">
+                        <span>Horas de sueño</span>
+                        <span id="val-sleep" class="text-fuchsia-400">7.5 hrs</span>
+                    </label>
+                    <input type="range" id="input-sleep" min="4" max="10" step="0.5" value="7.5" oninput="document.getElementById('val-sleep').innerText = this.value + ' hrs'" class="w-full accent-fuchsia-500">
+                </div>
+                <div>
+                    <label class="flex justify-between text-sm font-semibold text-white mb-2">
+                        <span>Nivel de Estrés / Energía</span>
+                        <span id="val-stress" class="text-fuchsia-400">Moderado (3)</span>
+                    </label>
+                    <input type="range" id="input-stress" min="1" max="5" value="3" oninput="updateRangeLabel('val-stress', this.value, ['Muy Bajo', 'Bajo', 'Moderado', 'Alto', 'Extremo'])" class="w-full accent-fuchsia-500">
+                </div>
+                <div>
+                    <label class="flex justify-between text-sm font-semibold text-white mb-2">
+                        <span>Agujetas / Fatiga Muscular</span>
+                        <span id="val-doms" class="text-fuchsia-400">Moderado (3)</span>
+                    </label>
+                    <input type="range" id="input-doms" min="1" max="5" value="3" oninput="updateRangeLabel('val-doms', this.value, ['Nada', 'Leve', 'Moderado', 'Fuerte', 'Muy Fuerte'])" class="w-full accent-fuchsia-500">
+                </div>
+            </div>
+
+            <button onclick="saveReadiness()" class="w-full mt-8 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-fuchsia-900/30 active:scale-95 transition">
+                Calcular Score y Empezar
+            </button>
+        </div>
+    </div>
+
+    <!-- LÓGICA DE LA APLICACIÓN BITCHESWORKOUT -->
+    <script>
+        /* =====================================================================
+           1. BASE DE DATOS COMPLETA DE EJERCICIOS RECOMENDADOS POR JEFF NIPPARD
+           Organizada por grupo muscular, destacando estabilidad y control
+           para desarrollar fuerza progresiva sin limitación inicial de brazos.
+           ===================================================================== */
+        const nippardExerciseDB = {
+            'Glúteos': [
+                { name: 'Hip Thrust (Barra o Máquina)', tier: 'S', cue: 'Rey de contracción acortada del glúteo; pausa de 1s arriba sin arquear lumbar' },
+                { name: 'Sentadilla Búlgara (Enfoque Glúteo)', tier: 'S', cue: 'Torso inclinado 20° adelante y paso largo; usa una mano en apoyo para estabilidad' },
+                { name: 'Prensa con Pies Arriba', tier: 'S', cue: 'Pies altos en la plataforma: gran flexión de cadera sin depender de fuerza de brazos' },
+                { name: 'Patada de Glúteo en Polea', tier: 'S', cue: 'Aislamiento unilateral limpio; empuja hacia atrás en diagonal (30°) sin doblar lumbar' },
+                { name: 'Step-Ups Altos (Con Apoyo)', tier: 'S', cue: 'Sostente del rack con una mano para máxima estabilidad y sube solo con la pierna arriba' },
+                { name: 'Zancadas Caminando (Lunges)', tier: 'S', cue: 'Gran estiramiento bajo carga en cada paso' },
+                { name: 'Sentadilla Sumo en Multipower', tier: 'A', cue: 'Postura amplia con puntas hacia afuera; la barra guiada elimina el peso en brazos' },
+                { name: 'Hiperextensiones 45° (Enfoque Glúteo)', tier: 'A', cue: 'Espalda alta redondeada y puntas hacia afuera para aislar glúteo mayor' }
+            ],
+            'Isquiosurales': [
+                { name: 'Curl de Isquios sentado', tier: 'S', cue: 'Cadera flexionada = mayor estiramiento y más crecimiento sin exigir agarre' },
+                { name: 'Peso Muerto Rumano (RDL) en Multipower / Mancuernas', tier: 'S', cue: 'Empuja la cadera atrás; usa straps si sientes que tus antebrazos se cansan antes' },
+                { name: 'Curl de Isquios tumbado', tier: 'A', cue: 'Cero carga de brazos; mantén la cadera pegada al banco al subir' },
+                { name: 'Peso Muerto Piernas Rígidas', tier: 'S', cue: 'Estiramiento profundo desde el suelo (recomendado con straps)' },
+                { name: 'Hiperextensiones 45° (Enfoque Isquios)', tier: 'A', cue: 'Espalda neutra bajando controlado para estirar la cadena posterior' },
+                { name: 'Buenos Días en Multipower (Smith)', tier: 'A', cue: 'Bisagra de cadera guiada sin necesidad de sostener peso con las manos' }
+            ],
+            'Cuádriceps': [
+                { name: 'Sentadilla Hack', tier: 'S', cue: 'Estabilidad total: cero demanda de control en brazos para cargar pesado' },
+                { name: 'Sentadilla en Multipower (Smith)', tier: 'S', cue: 'Pies ligeramente adelantados; controla la bajada con total seguridad' },
+                { name: 'Extensiones de Cuádriceps', tier: 'S', cue: 'Único ejercicio que maximiza el recto femoral sin fatiga sistémica' },
+                { name: 'Sentadilla Pendular', tier: 'S', cue: 'Perfil de resistencia perfecto y muy amigable con rodillas y espalda' },
+                { name: 'Prensa de Piernas (Pies Bajos)', tier: 'A', cue: 'Pies más abajo en la plataforma para máxima flexión de rodilla' },
+                { name: 'Sentadilla Búlgara (Enfoque Cuádriceps)', tier: 'A', cue: 'Torso más vertical dejando que la rodilla viaje adelante' },
+                { name: 'Sentadilla con barra', tier: 'A', cue: 'Compuesto clásico cuando ya tengas dominio técnico completo' },
+                { name: 'Sissy Squat Asistida', tier: 'A', cue: 'Estiramiento profundo sosteniéndote de un poste/rack' }
+            ],
+            'Abductores': [
+                { name: 'Máquina Abductores', tier: 'S', cue: 'Enfoque directo en glúteo medio y superior; inclina ligeramente el torso adelante' },
+                { name: 'Abducción de Cadera en Polea', tier: 'S', cue: 'Cruza ligeramente la pierna por delante para mayor rango en estiramiento' },
+                { name: 'Caminata Lateral con Banda', tier: 'A', cue: 'Excelente activación o remate metabólico' }
+            ],
+            'Aductores': [
+                { name: 'Máquina Aductores', tier: 'S', cue: 'Estímulo profundo del aductor mayor (da forma a la cara interna del muslo)' },
+                { name: 'Aducción de Cadera en Polea', tier: 'S', cue: 'Alternativa unilateral con tensión constante' },
+                { name: 'Plancha Copenhagen', tier: 'A', cue: 'Fuerza isométrica de aductores y estabilidad de core' }
+            ],
+            'Gemelos': [
+                { name: 'Elevaciones de gemelos en Prensa', tier: 'S', cue: 'Rodilla casi recta + pausa de 1–2s abajo; cero carga en hombros o brazos' },
+                { name: 'Elevaciones de gemelos de pie', tier: 'S', cue: 'Máximo estiramiento en la base para el gastrocnemio' },
+                { name: 'Elevación gemelos sentado', tier: 'A', cue: 'Enfoque directo en el sóleo (rodilla flexionada)' },
+                { name: 'Elevaciones de gemelos en Multipower', tier: 'A', cue: 'Usa un step debajo de las puntas para rango completo' }
+            ],
+            'Espalda': [
+                { name: 'Jalón al Pecho Agarre Neutro', tier: 'S', cue: 'Muy estable y natural para hombros; enfócate en bajar los codos hacia la cadera' },
+                { name: 'Remo con Apoyo en Pecho', tier: 'S', cue: 'Máximo control sin balanceo: ideal para ganar fuerza en espalda sin depender de brazos' },
+                { name: 'Dominadas Asistidas en Máquina / Jalón al pecho', tier: 'S', cue: 'La asistencia graduada permite progresar fuerza de tracción semana a semana' },
+                { name: 'Remo en polea baja apoyado', tier: 'S', cue: 'Trayectoria limpia y controlada para espalda media y dorsales' },
+                { name: 'Remo en T con Apoyo al Pecho', tier: 'S', cue: 'Gran estabilidad para trabajar trapecio medio y postura' },
+                { name: 'Remo Unilateral en Polea (Iliac Row)', tier: 'S', cue: 'Un brazo a la vez para mejor conexión mente-músculo con el dorsal' },
+                { name: 'Pullover en Polea Alta (Brazos Rectos)', tier: 'A', cue: 'Aísla el dorsal sin que el bíceps se fatigue primero' },
+                { name: 'Remo con Mancuerna a Una Mano', tier: 'A', cue: 'Apoya mano libre en banco para total control corporal' },
+                { name: 'Remo con Barra', tier: 'A', cue: 'Compuesto avanzado cuando el agarre y la espalda estén fuertes' }
+            ],
+            'Pectoral': [
+                { name: 'Press de Pecho en máquina', tier: 'S', cue: 'Recorrido guiado: construye fuerza de empuje sin inestabilidad en muñecas o brazos' },
+                { name: 'Press Inclinado en Multipower (Smith)', tier: 'S', cue: 'Máxima estabilidad y seguridad para progresar peso en pectoral superior' },
+                { name: 'Pec-Deck', tier: 'S', cue: 'Aislamiento puro de pecho sin fatigar los tríceps de forma prematura' },
+                { name: 'Cruce de Poleas Sentado', tier: 'S', cue: 'Espalda apoyada para control absoluto y tensión constante' },
+                { name: 'Press Inclinado con Mancuernas', tier: 'S', cue: 'Banco a 15°–30° con peso controlado para mejorar la estabilidad de brazos' },
+                { name: 'Press Plano con Mancuernas', tier: 'A', cue: 'Excelente para igualar fuerza entre ambos brazos' },
+                { name: 'Press de Banca', tier: 'A', cue: 'Compuesto clásico cuando exista buen control escapular' }
+            ],
+            'Hombros': [
+                { name: 'Elevaciones Laterales en Polea', tier: 'S', cue: 'Tensión constante desde abajo; mucho más controlable que mancuernas pesadas' },
+                { name: 'Press de Hombros en Máquina', tier: 'S', cue: 'Estabilidad total para fortalecer hombros y brazos con seguridad' },
+                { name: 'Face Pulls', tier: 'S', cue: 'Mejora la postura, fortalece el manguito rotador y protege los hombros' },
+                { name: 'Pájaros en Pec-Deck Inverso', tier: 'S', cue: 'Aislamiento guiado y muy cómodo para el deltoides posterior' },
+                { name: 'Elevaciones Posteriores en Polea', tier: 'S', cue: 'Excelente control en cada repetición' },
+                { name: 'Elevaciones Laterales', tier: 'A', cue: 'Con mancuernas ligeras en plano escapular (30° hacia adelante)' },
+                { name: 'Press de Hombros con Mancuernas Sentado', tier: 'A', cue: 'Respaldo alto a 80° para no arquear la zona lumbar' },
+                { name: 'Press Militar', tier: 'A', cue: 'Empuje vertical libre avanzado' }
+            ],
+            'Bíceps': [
+                { name: 'Curl Predicador en Máquina / Banco', tier: 'S', cue: 'Brazos apoyados: control total desde el día 1 y cero balanceo' },
+                { name: 'Curl Bayesiano en Polea', tier: 'S', cue: 'Tensión suave y constante con gran estiramiento del bíceps' },
+                { name: 'Curl de Bíceps inclinado', tier: 'S', cue: 'Banco a 45° para estirar la cabeza larga sin trampear' },
+                { name: 'Curl Martillo', tier: 'A', cue: 'Fortalece el antebrazo y el agarre (ayuda mucho en RDL y espalda)' },
+                { name: 'Curl con Barra EZ', tier: 'A', cue: 'Posición natural y cómoda para muñecas' },
+                { name: 'Curl Concentrado', tier: 'A', cue: 'Codo apoyado en el muslo para máximo control unilateral' }
+            ],
+            'Tríceps': [
+                { name: 'Extensión Tríceps en polea', tier: 'S', cue: 'Codos fijos a los costados: súper estable, seguro y fácil de progresar' },
+                { name: 'Extensión Tríceps Sobre la Cabeza en Polea', tier: 'S', cue: 'Estira la cabeza larga del tríceps para máxima hipertrofia' },
+                { name: 'Extensión Katana en Polea', tier: 'S', cue: 'Alineación anatómica muy cómoda para codos y muñecas' },
+                { name: 'Fondos en Máquina para Tríceps', tier: 'A', cue: 'Permite ganar mucha fuerza de brazos sin cargar tu peso corporal' },
+                { name: 'Press Francés con Barra EZ / Mancuernas', tier: 'S', cue: 'Controlar bien el peso al bajar detrás de la cabeza' }
+            ],
+            'Abdominales': [
+                { name: 'Crunches en Polea Alta', tier: 'S', cue: 'Flexión real de columna con peso ajustable para sobrecarga progresiva' },
+                { name: 'Crunches en Máquina', tier: 'S', cue: 'Máxima estabilidad sin involucrar el cuello ni los brazos' },
+                { name: 'Elevaciones de rodillas en silla romana', tier: 'S', bodyweightOnly: true, cue: 'Apoya bien los antebrazos y enrolla la pelvis hacia arriba (no exige fuerza de agarre)' },
+                { name: 'Elevaciones de piernas colgado', tier: 'S', bodyweightOnly: true, cue: 'Versión avanzada cuando tu agarre esté más fuerte' },
+                { name: 'Crunches Abdominales', tier: 'A', cue: 'Flexión lenta y controlada en colchoneta o banco' },
+                { name: 'Plancha Abdominal con Protracción (RKC)', tier: 'A', bodyweightOnly: true, cue: 'Aprieta glúteos y abdomen 30–45s por serie' }
+            ]
+        };
+
+        function findExerciseMeta(exerciseName) {
+            for (const muscle in nippardExerciseDB) {
+                const found = nippardExerciseDB[muscle].find(e => e.name === exerciseName);
+                if (found) return found;
+            }
+            return null;
+        }
+
+        function isBodyweightOnlyExercise(exerciseName) {
+            const meta = findExerciseMeta(exerciseName);
+            return Boolean(meta && meta.bodyweightOnly);
+        }
+
+        /* =====================================================================
+           2. RUTINA BASE DE 5 DÍAS (BITCHESWORKOUT - MÁX 90 MIN, 2-3m PESADOS)
+           - Lunes: Lower A (Glúteos e Isquios)
+           - Martes: Upper A (Torso Estable en Máquinas y Poleas)
+           - Miércoles: Lower B (Cuádriceps, Glúteo y Core)
+           - Jueves: Descanso Activo (SRA)
+           - Viernes: Upper B (Torso Completo + Superset Brazos Controlados)
+           - Sábado: Lower C (Glúteo Focus, Cadena Posterior y Core)
+           - Domingo: Descanso Total
+           ===================================================================== */
+        const routineData = [
+            {
+                dayIndex: 1,
+                name: 'Día 1: Lower A',
+                short: 'L',
+                focus: 'Glúteos e Isquiosurales (Descanso 2–3m en pesados)',
+                tip: 'En Hip Thrust y RDL descansa 2 a 3 min completos. Si sientes que las manos se cansan antes que las piernas en RDL, usa straps o hazlo en Multipower.',
+                items: [
+                    { id: 'bw-d1-1', muscle: 'Glúteos', name: 'Hip Thrust (Barra o Máquina)', repTarget: '6–10 reps' },
+                    { id: 'bw-d1-2', muscle: 'Isquiosurales', name: 'Peso Muerto Rumano (RDL) en Multipower / Mancuernas', repTarget: '8–10 reps' },
+                    { id: 'bw-d1-3', muscle: 'Glúteos', name: 'Prensa con Pies Arriba', repTarget: '10–12 reps' },
+                    { id: 'bw-d1-4', muscle: 'Isquiosurales', name: 'Curl de Isquios sentado', repTarget: '10–15 reps' },
+                    { id: 'bw-d1-5', muscle: 'Abductores', name: 'Máquina Abductores', repTarget: '12–15 reps' },
+                    { id: 'bw-d1-6', muscle: 'Gemelos', name: 'Elevaciones de gemelos en Prensa', repTarget: '12–15 reps' }
+                ]
+            },
+            {
+                dayIndex: 2,
+                name: 'Día 2: Upper A',
+                short: 'M',
+                focus: 'Espalda, Pecho y Hombros (Máxima Estabilidad)',
+                tip: 'Todo este día usa máquinas y poleas guiadas para que puedas progresar peso y fortalecer tus brazos con control total y cero inestabilidad.',
+                items: [
+                    { id: 'bw-d2-1', muscle: 'Espalda', name: 'Jalón al Pecho Agarre Neutro', repTarget: '8–12 reps' },
+                    { id: 'bw-d2-2', muscle: 'Pectoral', name: 'Press de Pecho en máquina', repTarget: '8–12 reps' },
+                    { id: 'bw-d2-3', muscle: 'Espalda', name: 'Remo con Apoyo en Pecho', repTarget: '8–12 reps' },
+                    { id: 'bw-d2-4', muscle: 'Hombros', name: 'Press de Hombros en Máquina', repTarget: '10–12 reps' },
+                    { id: 'bw-d2-5', muscle: 'Hombros', name: 'Elevaciones Laterales en Polea', repTarget: '12–15 reps' },
+                    { id: 'bw-d2-6', muscle: 'Hombros', name: 'Face Pulls', repTarget: '12–15 reps' }
+                ]
+            },
+            {
+                dayIndex: 3,
+                name: 'Día 3: Lower B + Core',
+                short: 'X',
+                focus: 'Cuádriceps, Glúteo y Abdominales (Pre-Descanso)',
+                tip: 'Hack Squat y Búlgaras con apoyo quitan el límite de fuerza de brazos para exprimir tus piernas al máximo. Abdominales al final antes del descanso de mañana.',
+                items: [
+                    { id: 'bw-d3-1', muscle: 'Cuádriceps', name: 'Sentadilla Hack', repTarget: '6–10 reps' },
+                    { id: 'bw-d3-2', muscle: 'Glúteos', name: 'Sentadilla Búlgara (Enfoque Glúteo)', repTarget: '8–12 reps' },
+                    { id: 'bw-d3-3', muscle: 'Cuádriceps', name: 'Extensiones de Cuádriceps', repTarget: '10–15 reps' },
+                    { id: 'bw-d3-4', muscle: 'Aductores', name: 'Máquina Aductores', repTarget: '12–15 reps' },
+                    { id: 'bw-d3-5', muscle: 'Abdominales', name: 'Crunches en Polea Alta', repTarget: '12–15 reps' },
+                    { id: 'bw-d3-6', muscle: 'Abdominales', name: 'Elevaciones de rodillas en silla romana', repTarget: 'Al fallo técnico' }
+                ]
+            },
+            {
+                dayIndex: 4,
+                name: 'Día 4: Descanso',
+                short: 'J',
+                focus: 'Recuperación Muscular y del SNC (Curva SRA)',
+                tip: 'El músculo crece cuando descansas. Prioriza 7–8 horas de sueño, hidratación y cumplir tu meta de proteína (~115 g).',
+                items: []
+            },
+            {
+                dayIndex: 5,
+                name: 'Día 5: Upper B',
+                short: 'V',
+                focus: 'Torso Completo + Superset de Brazos Controlados',
+                tip: 'El superset final usa Curl Predicador y Polea para que tus brazos ganen fuerza, tono y control rápido sin balanceo.',
+                items: [
+                    { id: 'bw-d5-1', muscle: 'Espalda', name: 'Dominadas Asistidas en Máquina / Jalón al pecho', repTarget: '8–12 reps' },
+                    { id: 'bw-d5-2', muscle: 'Pectoral', name: 'Press Inclinado en Multipower (Smith)', repTarget: '8–12 reps' },
+                    { id: 'bw-d5-3', muscle: 'Espalda', name: 'Remo en polea baja apoyado', repTarget: '10–12 reps' },
+                    { id: 'bw-d5-4', muscle: 'Hombros', name: 'Pájaros en Pec-Deck Inverso', repTarget: '12–15 reps' },
+                    {
+                        id: 'bw-d5-5',
+                        isSuperset: true,
+                        title: 'Superset Brazos (Control Total)',
+                        subExercises: [
+                            { id: 'bw-d5-5a', label: 'a', muscle: 'Bíceps', name: 'Curl Predicador en Máquina / Banco', repTarget: '10–12 reps' },
+                            { id: 'bw-d5-5b', label: 'b', muscle: 'Tríceps', name: 'Extensión Tríceps en polea', repTarget: '10–15 reps' }
+                        ]
+                    }
+                ]
+            },
+            {
+                dayIndex: 6,
+                name: 'Día 6: Lower C + Core',
+                short: 'S',
+                focus: 'Glúteo Focus, Cadena Posterior y Core',
+                tip: 'Última sesión de la semana enfocada en glúteo completo (contracción + estiramiento + abducción). Respeta 2–3 min de descanso en Hip Thrust y Step-Ups.',
+                items: [
+                    { id: 'bw-d6-1', muscle: 'Glúteos', name: 'Hip Thrust (Barra o Máquina)', repTarget: '8–12 reps' },
+                    { id: 'bw-d6-2', muscle: 'Glúteos', name: 'Step-Ups Altos (Con Apoyo)', repTarget: '10–12 reps' },
+                    { id: 'bw-d6-3', muscle: 'Glúteos', name: 'Patada de Glúteo en Polea', repTarget: '12–15 reps' },
+                    { id: 'bw-d6-4', muscle: 'Isquiosurales', name: 'Curl de Isquios tumbado', repTarget: '10–15 reps' },
+                    { id: 'bw-d6-5', muscle: 'Abductores', name: 'Máquina Abductores', repTarget: '12–15 reps' },
+                    { id: 'bw-d6-6', muscle: 'Abdominales', name: 'Crunches en Máquina', repTarget: '12–15 reps' }
+                ]
+            },
+            {
+                dayIndex: 0,
+                name: 'Día 7: Descanso Total',
+                short: 'D',
+                focus: 'Recuperación Completa para la Próxima Semana',
+                tip: 'Descanso completo para recargar glucógeno y llegar al 100% el lunes.',
+                items: []
+            }
+        ];
+
+        /* =====================================================================
+           3. ESTADO GLOBAL Y LOCAL STORAGE (INDEPENDIENTE PARA BITCHESWORKOUT)
+           ===================================================================== */
+        let activeDayIndex = new Date().getDay();
+        let trainingLogs = JSON.parse(localStorage.getItem('bwTrackerLogs')) || [];
+        let readinessLogs = JSON.parse(localStorage.getItem('bwTrackerReadiness')) || {};
+        let exerciseSwaps = JSON.parse(localStorage.getItem('bwTrackerSwaps')) || {};
+        let customDayItems = JSON.parse(localStorage.getItem('bwTrackerDayItems')) || {};
+        let bodyLogs = JSON.parse(localStorage.getItem('bwTrackerBody')) || [];
+        let tdeeTarget = parseInt(localStorage.getItem('bwTrackerTdee'), 10) || 2000;
+
+        let activeExerciseInputs = {};
+        let openSwappers = {};
+        let combineMode = 'today';
+
+        let tabChartInstance = null;
+        let modalChartInstance = null;
+        let recompChartInstance = null;
+
+        function getDayItems(dayIndex) {
+            if (customDayItems[dayIndex]) {
+                return customDayItems[dayIndex];
+            }
+            const base = routineData.find(r => r.dayIndex === dayIndex);
+            return base ? JSON.parse(JSON.stringify(base.items)) : [];
+        }
+
+        function saveDayItems(dayIndex, items) {
+            customDayItems[dayIndex] = items;
+            localStorage.setItem('bwTrackerDayItems', JSON.stringify(customDayItems));
+        }
+
+        function getActiveExerciseName(slot) {
+            return exerciseSwaps[slot.id] || slot.name;
+        }
+
+        function getTodayStr() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function formatShortDateEs(dateStr) {
+            const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            const parts = dateStr.split('-');
+            if (parts.length !== 3) return dateStr;
+            const day = parseInt(parts[2], 10);
+            const monthIdx = parseInt(parts[1], 10) - 1;
+            return `${day} ${months[monthIdx] || ''}`;
+        }
+
+        function escapeAttr(str) {
+            return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+
+        /* =====================================================================
+           4. INICIALIZACIÓN Y RENDERIZADO DE LA RUTINA
+           ===================================================================== */
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDaySelector();
+            selectDay(activeDayIndex);
+            initBodyTab();
+            setupPWA();
+        });
+
+        function renderDaySelector() {
+            const container = document.getElementById('days-container');
+            container.innerHTML = '';
+
+            const orderedDays = [1, 2, 3, 4, 5, 6, 0];
+            orderedDays.forEach(dIndex => {
+                const day = routineData.find(r => r.dayIndex === dIndex);
+                const isToday = new Date().getDay() === dIndex;
+
+                const btn = document.createElement('button');
+                btn.className = `min-w-[58px] py-2.5 px-3 rounded-2xl flex flex-col items-center justify-center snap-center transition-all ${
+                    dIndex === activeDayIndex
+                        ? 'bg-gradient-to-br from-fuchsia-600 to-purple-600 text-white shadow-lg shadow-fuchsia-600/25'
+                        : 'bg-slate-800/90 text-slate-400 border border-slate-700/50'
+                }`;
+                btn.onclick = () => selectDay(dIndex);
+                btn.id = `day-btn-${dIndex}`;
+                btn.innerHTML = `
+                    <span class="text-xs font-bold mb-1">${day.short}</span>
+                    <div class="w-1.5 h-1.5 rounded-full ${isToday ? 'bg-white' : 'bg-transparent'}"></div>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function selectDay(index) {
+            document.querySelectorAll('#days-container button').forEach(b => {
+                b.classList.remove('bg-gradient-to-br', 'from-fuchsia-600', 'to-purple-600', 'text-white', 'shadow-lg', 'shadow-fuchsia-600/25');
+                b.classList.add('bg-slate-800/90', 'text-slate-400', 'border', 'border-slate-700/50');
+            });
+            const activeBtn = document.getElementById(`day-btn-${index}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-slate-800/90', 'text-slate-400', 'border', 'border-slate-700/50');
+                activeBtn.classList.add('bg-gradient-to-br', 'from-fuchsia-600', 'to-purple-600', 'text-white', 'shadow-lg', 'shadow-fuchsia-600/25');
+            }
+
+            activeDayIndex = index;
+            const dayInfo = routineData.find(r => r.dayIndex === index);
+            const items = getDayItems(index);
+
+            document.getElementById('routine-day-title').innerText = dayInfo.name;
+            document.getElementById('routine-day-desc').innerText = dayInfo.focus;
+
+            const tipBanner = document.getElementById('day-tip-banner');
+            const tipText = document.getElementById('day-tip-text');
+            if (dayInfo.tip) {
+                tipText.innerText = dayInfo.tip;
+                tipBanner.classList.remove('hidden');
+            } else {
+                tipBanner.classList.add('hidden');
+            }
+
+            renderRoutineHeaderActions(index, items);
+            renderExercises(dayInfo, items);
+
+            if (index === new Date().getDay() && items.length > 0) {
+                checkReadiness();
+            }
+        }
+
+        function renderRoutineHeaderActions(dayIndex, items) {
+            const actionsEl = document.getElementById('routine-actions');
+            const standaloneCount = items.filter(i => !i.isSuperset).length;
+            const isCustomized = Boolean(customDayItems[dayIndex]);
+
+            let html = '';
+            if (standaloneCount > 0) {
+                html += `
+                    <button onclick="openCombineModal()" class="px-3 py-2 rounded-xl bg-fuchsia-600/20 hover:bg-fuchsia-600/30 text-fuchsia-300 border border-fuchsia-500/40 text-xs font-bold flex items-center gap-1.5 active:scale-95 transition">
+                        <i class="ph ph-link text-sm"></i> Combinar ejercicios
+                    </button>
+                `;
+            }
+            if (isCustomized) {
+                html += `
+                    <button onclick="resetDayLayout()" title="Restaurar ejercicios originales de este día" class="px-2.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700/60 text-xs font-semibold flex items-center gap-1 active:scale-95 transition">
+                        <i class="ph ph-arrow-counter-clockwise text-sm"></i>
+                    </button>
+                `;
+            }
+            actionsEl.innerHTML = html;
+        }
+
+        function ensureSlotInputs(slotId, exerciseName) {
+            const todayStr = getTodayStr();
+            const key = `${slotId}::${exerciseName}`;
+            if (activeExerciseInputs[key]) return activeExerciseInputs[key];
+
+            const logFromToday = trainingLogs.find(log => log.exercise === exerciseName && log.date === todayStr);
+            const lastLog = [...trainingLogs].reverse().find(log => log.exercise === exerciseName);
+
+            if (logFromToday && logFromToday.sets && logFromToday.sets.length > 0) {
+                activeExerciseInputs[key] = logFromToday.sets.map(s => ({
+                    weight: s.weight ?? '',
+                    reps: s.reps ?? '',
+                    rir: s.rir ?? '2'
+                }));
+            } else if (lastLog && lastLog.sets && lastLog.sets.length > 0) {
+                activeExerciseInputs[key] = lastLog.sets.map(s => ({
+                    weight: s.weight ?? '',
+                    reps: '',
+                    rir: s.rir ?? '2'
+                }));
+            } else {
+                activeExerciseInputs[key] = [
+                    { weight: '', reps: '', rir: '2' },
+                    { weight: '', reps: '', rir: '1' },
+                    { weight: '', reps: '', rir: '1' }
+                ];
+            }
+            return activeExerciseInputs[key];
+        }
+
+        function buildSwapperHTML(slot) {
+            if (!openSwappers[slot.id]) return '';
+
+            const currentName = getActiveExerciseName(slot);
+            const muscleOptions = nippardExerciseDB[slot.muscle] || [];
+            const isSwapped = Boolean(exerciseSwaps[slot.id] && exerciseSwaps[slot.id] !== slot.name);
+
+            let optionsHTML = muscleOptions.map(item => {
+                const selected = item.name === currentName ? 'selected' : '';
+                const tierLabel = item.tier ? `[${item.tier}-Tier] ` : '';
+                return `<option value="${escapeAttr(item.name)}" ${selected}>${tierLabel}${item.name}</option>`;
+            }).join('');
+
+            if (!muscleOptions.some(e => e.name === currentName)) {
+                optionsHTML = `<option value="${escapeAttr(currentName)}" selected>${currentName}</option>` + optionsHTML;
+            }
+
+            const selectedMeta = muscleOptions.find(e => e.name === currentName);
+
+            return `
+                <div class="mb-3 p-3 rounded-2xl bg-slate-900/90 border border-fuchsia-500/30 fade-in">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-fuchsia-300 flex items-center gap-1.5">
+                            <i class="ph ph-arrows-left-right"></i> Cambiar ejercicio · Músculo: ${slot.muscle}
+                        </span>
+                        ${isSwapped ? `<button onclick="resetExerciseSwap('${slot.id}')" class="text-[11px] text-slate-400 hover:text-white underline">Restaurar base</button>` : ''}
+                    </div>
+                    <div class="relative">
+                        <select onchange="changeSlotExercise('${slot.id}', this.value)" class="w-full text-xs sm:text-sm font-semibold rounded-xl px-3 py-2.5 pr-8 border border-slate-700 focus:border-fuchsia-500 outline-none appearance-none">
+                            ${optionsHTML}
+                        </select>
+                        <i class="ph ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                    </div>
+                    ${selectedMeta && selectedMeta.cue ? `<p class="text-[11px] text-slate-400 mt-2 leading-relaxed"><span class="text-fuchsia-400 font-semibold">Tip Nippard:</span> ${selectedMeta.cue}</p>` : ''}
+                </div>
+            `;
+        }
+
+        function buildExerciseBodyHTML(slot, isInsideSuperset = false) {
+            const exerciseName = getActiveExerciseName(slot);
+            const key = `${slot.id}::${exerciseName}`;
+            const sets = ensureSlotInputs(slot.id, exerciseName);
+            const bwOnly = isBodyweightOnlyExercise(exerciseName);
+            const canRemove = sets.length > 1;
+
+            let setsHTML = '';
+            sets.forEach((set, sIdx) => {
+                if (bwOnly) {
+                    setsHTML += `
+                        <div class="flex items-center gap-2 mb-2.5 bg-slate-900/60 p-2 rounded-xl border border-slate-800/80">
+                            <span class="w-6 text-center text-xs font-bold text-slate-500">${sIdx + 1}</span>
+                            <div class="flex-1 relative">
+                                <input type="number" inputmode="numeric" placeholder="Repeticiones" value="${set.reps}" oninput="updateSetData('${escapeAttr(key)}', ${sIdx}, 'reps', this.value)" class="w-full text-sm p-2.5 rounded-lg focus:outline-none focus:ring-1 focus:ring-fuchsia-500 border border-slate-700/80 text-center">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500">reps</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    setsHTML += `
+                        <div class="flex items-center gap-2 mb-2.5 bg-slate-900/60 p-2 rounded-xl border border-slate-800/80">
+                            <span class="w-6 text-center text-xs font-bold text-slate-500">${sIdx + 1}</span>
+                            <div class="flex-1 relative">
+                                <input type="number" inputmode="decimal" step="0.5" placeholder="Peso" value="${set.weight}" oninput="updateSetData('${escapeAttr(key)}', ${sIdx}, 'weight', this.value)" class="w-full text-sm p-2.5 pr-7 rounded-lg focus:outline-none focus:ring-1 focus:ring-fuchsia-500 border border-slate-700/80">
+                                <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-slate-500">kg</span>
+                            </div>
+                            <div class="flex-1 relative">
+                                <input type="number" inputmode="numeric" placeholder="Reps" value="${set.reps}" oninput="updateSetData('${escapeAttr(key)}', ${sIdx}, 'reps', this.value)" class="w-full text-sm p-2.5 pr-9 rounded-lg focus:outline-none focus:ring-1 focus:ring-fuchsia-500 border border-slate-700/80">
+                                <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-slate-500">reps</span>
+                            </div>
+                            <div class="flex-1 relative">
+                                <select onchange="updateSetData('${escapeAttr(key)}', ${sIdx}, 'rir', this.value)" class="w-full text-xs sm:text-sm p-2.5 rounded-lg focus:outline-none focus:ring-1 focus:ring-fuchsia-500 border border-slate-700/80 appearance-none text-center">
+                                    <option value="3" ${set.rir == '3' ? 'selected' : ''}>RIR 3</option>
+                                    <option value="2" ${set.rir == '2' ? 'selected' : ''}>RIR 2</option>
+                                    <option value="1" ${set.rir == '1' ? 'selected' : ''}>RIR 1</option>
+                                    <option value="0" ${set.rir == '0' ? 'selected' : ''}>RIR 0</option>
+                                </select>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            const headerRow = bwOnly
+                ? `<div class="flex text-[11px] font-semibold text-slate-400 mb-2 px-8 uppercase tracking-wide text-center"><div class="flex-1">Repeticiones (Peso Corporal)</div></div>`
+                : `<div class="flex text-[11px] font-semibold text-slate-400 mb-2 px-8 uppercase tracking-wide"><div class="flex-1">Carga</div><div class="flex-1">Reps</div><div class="flex-1 text-center">Intensidad</div></div>`;
+
+            return `
+                ${buildSwapperHTML(slot)}
+                ${headerRow}
+                <div>${setsHTML}</div>
+                <div class="flex gap-2 mt-3">
+                    <!-- Botón Añadir Serie -->
+                    <button onclick="addSet('${escapeAttr(key)}')" class="flex-1 py-2.5 px-3 rounded-xl border border-dashed border-slate-600 text-slate-300 text-xs sm:text-sm font-semibold hover:bg-slate-700/60 active:scale-95 transition flex items-center justify-center gap-1.5">
+                        <i class="ph ph-plus font-bold"></i> Añadir Serie
+                    </button>
+                    <!-- Botón "-" al costado derecho para eliminar serie -->
+                    <button onclick="removeSet('${escapeAttr(key)}')" ${canRemove ? '' : 'disabled'} title="Eliminar última serie" class="w-11 shrink-0 py-2.5 rounded-xl border ${canRemove ? 'border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 active:scale-95' : 'border-slate-700/50 bg-slate-800/50 text-slate-600 cursor-not-allowed'} text-base font-extrabold transition flex items-center justify-center">
+                        <i class="ph ph-minus font-bold"></i>
+                    </button>
+                    ${!isInsideSuperset ? `
+                        <button onclick="saveSlotData('${slot.id}', '${escapeAttr(exerciseName)}')" class="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-fuchsia-900/25 active:scale-95 transition flex justify-center items-center gap-1.5">
+                            <i class="ph ph-floppy-disk text-base"></i> Guardar
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function renderExercises(dayInfo, items) {
+            const container = document.getElementById('exercises-list');
+            container.innerHTML = '';
+
+            if (!items || items.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center p-10 bg-slate-900/70 rounded-3xl border border-slate-800 border-dashed">
+                        <i class="ph ph-coffee text-4xl text-fuchsia-400/70 mb-3 block"></i>
+                        <p class="text-slate-200 font-semibold">${dayInfo.name}</p>
+                        <p class="text-xs text-slate-400 mt-1">Sin entrenamiento de pesas hoy. Recuerda registrar tu peso y proteína en la pestaña Peso & Kcal.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const todayStr = getTodayStr();
+
+            items.forEach(item => {
+                const card = document.createElement('div');
+
+                if (item.isSuperset) {
+                    card.className = 'bg-[#131c2e] rounded-3xl overflow-hidden border border-fuchsia-500/35 shadow-md';
+
+                    let subHTML = '';
+                    item.subExercises.forEach((sub, subIdx) => {
+                        const exName = getActiveExerciseName(sub);
+                        const lastLog = [...trainingLogs].reverse().find(l => l.exercise === exName);
+                        const prevBadge = lastLog && lastLog.date !== todayStr && lastLog.sets[0]
+                            ? `<span class="text-[11px] text-fuchsia-300 bg-fuchsia-900/30 border border-fuchsia-500/20 px-2 py-0.5 rounded-md">Ant: ${lastLog.sets[0].weight ? lastLog.sets[0].weight + 'kg×' : ''}${lastLog.sets[0].reps}</span>`
+                            : '';
+
+                        subHTML += `
+                            <div class="${subIdx > 0 ? 'mt-4 pt-4 border-t border-slate-700/60' : ''}">
+                                <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-6 h-6 rounded-lg bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-xs font-extrabold uppercase flex items-center justify-center shrink-0">${sub.label}.</span>
+                                        <div>
+                                            <h4 class="font-bold text-white text-base leading-tight">${exName}</h4>
+                                            <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                                <span class="text-[10px] font-semibold uppercase tracking-wider text-fuchsia-300/90">${sub.muscle}</span>
+                                                ${sub.repTarget ? `<span class="text-[10px] text-slate-400 bg-slate-800/80 px-1.5 py-0.5 rounded">${sub.repTarget}</span>` : ''}
+                                                ${prevBadge}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <button onclick="openExerciseAnalyticsModal('${escapeAttr(exName)}')" title="Ver progreso" class="w-8 h-8 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-purple-400 flex items-center justify-center border border-slate-700/60 transition active:scale-95">
+                                            <i class="ph ph-chart-line-up text-base"></i>
+                                        </button>
+                                        <button onclick="toggleSwapper('${sub.id}')" class="px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700/60 flex items-center gap-1 transition active:scale-95">
+                                            <i class="ph ph-arrows-left-right text-fuchsia-400"></i> Cambiar
+                                        </button>
+                                    </div>
+                                </div>
+                                ${buildExerciseBodyHTML(sub, true)}
+                            </div>
+                        `;
+                    });
+
+                    card.innerHTML = `
+                        <div class="px-4 py-3 bg-gradient-to-r from-fuchsia-900/35 to-purple-900/20 border-b border-fuchsia-500/20 flex justify-between items-center gap-2">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="px-2 py-0.5 rounded-md bg-fuchsia-500/20 border border-fuchsia-400/40 text-fuchsia-300 text-[10px] font-extrabold uppercase tracking-wider shrink-0">Super Serie</span>
+                                <h3 class="font-extrabold text-white text-sm sm:text-base truncate">${item.title}</h3>
+                            </div>
+                            <button onclick="ungroupSuperset('${item.id}')" title="Separar en ejercicios individuales" class="px-2.5 py-1 rounded-lg bg-slate-900/70 hover:bg-slate-800 text-slate-300 text-[11px] font-semibold border border-slate-700/70 flex items-center gap-1 shrink-0 active:scale-95 transition">
+                                <i class="ph ph-link-break text-fuchsia-300"></i> Separar
+                            </button>
+                        </div>
+                        <div class="p-4">
+                            ${subHTML}
+                            <button onclick="saveSupersetData('${item.id}')" class="w-full mt-5 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white text-sm font-bold shadow-lg shadow-fuchsia-900/30 active:scale-95 transition flex justify-center items-center gap-2">
+                                <i class="ph ph-floppy-disk text-lg"></i> Guardar Super Serie Completa
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    const exName = getActiveExerciseName(item);
+                    const lastLog = [...trainingLogs].reverse().find(l => l.exercise === exName);
+                    const prevBadge = lastLog && lastLog.date !== todayStr && lastLog.sets[0]
+                        ? `<span class="text-[11px] text-fuchsia-300 bg-fuchsia-900/30 border border-fuchsia-500/20 px-2 py-0.5 rounded-md">Ant: ${lastLog.sets[0].weight ? lastLog.sets[0].weight + 'kg×' : ''}${lastLog.sets[0].reps}</span>`
+                        : '';
+
+                    card.className = 'bg-[#131c2e] rounded-3xl overflow-hidden border border-slate-800 shadow-sm';
+                    card.innerHTML = `
+                        <div class="p-4 bg-slate-800/35 border-b border-slate-800/80 flex justify-between items-start gap-2">
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2 flex-wrap mb-1">
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-fuchsia-300 bg-fuchsia-500/10 border border-fuchsia-500/25 px-2 py-0.5 rounded-md">${item.muscle}</span>
+                                    ${item.repTarget ? `<span class="text-[10px] font-semibold text-slate-300 bg-slate-800 px-2 py-0.5 rounded-md border border-slate-700/60">${item.repTarget}</span>` : ''}
+                                    ${prevBadge}
+                                </div>
+                                <h3 class="font-bold text-white text-lg leading-snug">${exName}</h3>
+                            </div>
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <button onclick="openCombineModal('${item.id}')" title="Combinar en Super Serie" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-fuchsia-300 flex items-center justify-center border border-slate-700/60 transition active:scale-95">
+                                    <i class="ph ph-link text-base"></i>
+                                </button>
+                                <button onclick="openExerciseAnalyticsModal('${escapeAttr(exName)}')" title="Ver analíticas" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-purple-400 flex items-center justify-center border border-slate-700/60 transition active:scale-95">
+                                    <i class="ph ph-chart-line-up text-lg"></i>
+                                </button>
+                                <button onclick="toggleSwapper('${item.id}')" class="px-2.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700/60 flex items-center gap-1 transition active:scale-95">
+                                    <i class="ph ph-arrows-left-right text-fuchsia-400"></i> Cambiar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="p-4 pt-3 fade-in">
+                            ${buildExerciseBodyHTML(item, false)}
+                        </div>
+                    `;
+                }
+
+                container.appendChild(card);
+            });
+        }
+
+        /* =====================================================================
+           5. CREADOR DE SUPER SERIES ("COMBINAR EJERCICIOS")
+           ===================================================================== */
+        function openCombineModal(preselectSlotId = null) {
+            const items = getDayItems(activeDayIndex);
+            const standalones = items.filter(i => !i.isSuperset);
+
+            if (standalones.length === 0) {
+                showToast('No hay ejercicios sueltos para combinar hoy', true);
+                return;
+            }
+
+            const selectA = document.getElementById('combine-slot-a');
+            selectA.innerHTML = standalones.map(s => {
+                const name = getActiveExerciseName(s);
+                return `<option value="${s.id}">[${s.muscle}] ${name}</option>`;
+            }).join('');
+
+            if (preselectSlotId && standalones.some(s => s.id === preselectSlotId)) {
+                selectA.value = preselectSlotId;
+            }
+
+            const muscleSelect = document.getElementById('combine-b-muscle');
+            muscleSelect.innerHTML = Object.keys(nippardExerciseDB).map(m =>
+                `<option value="${escapeAttr(m)}">${m}</option>`
+            ).join('');
+
+            const selectedSlotA = standalones.find(s => s.id === selectA.value);
+            const antagonistMap = {
+                'Cuádriceps': 'Isquiosurales',
+                'Isquiosurales': 'Cuádriceps',
+                'Glúteos': 'Abductores',
+                'Abductores': 'Aductores',
+                'Aductores': 'Abductores',
+                'Bíceps': 'Tríceps',
+                'Tríceps': 'Bíceps',
+                'Pectoral': 'Espalda',
+                'Espalda': 'Pectoral'
+            };
+            if (selectedSlotA && antagonistMap[selectedSlotA.muscle] && nippardExerciseDB[antagonistMap[selectedSlotA.muscle]]) {
+                muscleSelect.value = antagonistMap[selectedSlotA.muscle];
+            }
+
+            populateCombineDbExercises();
+            populateCombineTodayB();
+            setCombineMode(standalones.length >= 2 ? 'today' : 'db');
+
+            const modal = document.getElementById('combine-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeCombineModal() {
+            const modal = document.getElementById('combine-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function setCombineMode(mode) {
+            const standalones = getDayItems(activeDayIndex).filter(i => !i.isSuperset);
+            if (mode === 'today' && standalones.length < 2) {
+                showToast('Necesitas al menos 2 ejercicios sueltos hoy; usa Guía Nippard', true);
+                mode = 'db';
+            }
+
+            combineMode = mode;
+            const btnToday = document.getElementById('combine-mode-today');
+            const btnDb = document.getElementById('combine-mode-db');
+            const boxToday = document.getElementById('combine-b-today-box');
+            const boxDb = document.getElementById('combine-b-db-box');
+
+            if (mode === 'today') {
+                btnToday.className = 'py-2 px-2.5 rounded-lg text-xs font-bold transition bg-fuchsia-600 text-white shadow';
+                btnDb.className = 'py-2 px-2.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white';
+                boxToday.classList.remove('hidden');
+                boxDb.classList.add('hidden');
+            } else {
+                btnDb.className = 'py-2 px-2.5 rounded-lg text-xs font-bold transition bg-fuchsia-600 text-white shadow';
+                btnToday.className = 'py-2 px-2.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white';
+                boxDb.classList.remove('hidden');
+                boxToday.classList.add('hidden');
+            }
+            autoFillCombineTitle();
+        }
+
+        function onCombineSlotAChange() {
+            populateCombineTodayB();
+            autoFillCombineTitle();
+        }
+
+        function populateCombineTodayB() {
+            const slotAId = document.getElementById('combine-slot-a').value;
+            const standalones = getDayItems(activeDayIndex).filter(i => !i.isSuperset && i.id !== slotAId);
+            const selectB = document.getElementById('combine-slot-b-today');
+
+            if (standalones.length === 0) {
+                selectB.innerHTML = '<option value="">No hay otro ejercicio suelto hoy</option>';
+            } else {
+                selectB.innerHTML = standalones.map(s => {
+                    const name = getActiveExerciseName(s);
+                    return `<option value="${s.id}">[${s.muscle}] ${name}</option>`;
+                }).join('');
+            }
+        }
+
+        function populateCombineDbExercises() {
+            const muscle = document.getElementById('combine-b-muscle').value;
+            const list = nippardExerciseDB[muscle] || [];
+            const selectEx = document.getElementById('combine-b-exercise');
+            selectEx.innerHTML = list.map(ex =>
+                `<option value="${escapeAttr(ex.name)}">[${ex.tier}-Tier] ${ex.name}</option>`
+            ).join('');
+            autoFillCombineTitle();
+        }
+
+        function autoFillCombineTitle() {
+            const items = getDayItems(activeDayIndex);
+            const slotAId = document.getElementById('combine-slot-a').value;
+            const slotA = items.find(i => i.id === slotAId);
+            if (!slotA) return;
+
+            const labelA = slotA.muscle;
+            let labelB = '';
+
+            if (combineMode === 'today') {
+                const slotBId = document.getElementById('combine-slot-b-today').value;
+                const slotB = items.find(i => i.id === slotBId);
+                labelB = slotB ? getActiveExerciseName(slotB) : '';
+            } else {
+                labelB = document.getElementById('combine-b-exercise').value || '';
+            }
+
+            const titleInput = document.getElementById('combine-title');
+            titleInput.value = labelB ? `Super Serie ${labelA} + ${labelB}` : `Super Serie ${labelA}`;
+        }
+
+        function confirmCombineExercises() {
+            const items = getDayItems(activeDayIndex);
+            const slotAId = document.getElementById('combine-slot-a').value;
+            const idxA = items.findIndex(i => i.id === slotAId && !i.isSuperset);
+            if (idxA === -1) return;
+
+            const slotA = items[idxA];
+            const exAName = getActiveExerciseName(slotA);
+            let subB = null;
+
+            if (combineMode === 'today') {
+                const slotBId = document.getElementById('combine-slot-b-today').value;
+                const idxB = items.findIndex(i => i.id === slotBId && !i.isSuperset);
+                if (idxB === -1) {
+                    showToast('Selecciona un segundo ejercicio válido', true);
+                    return;
+                }
+                const slotB = items[idxB];
+                subB = {
+                    id: slotB.id,
+                    label: 'b',
+                    muscle: slotB.muscle,
+                    name: getActiveExerciseName(slotB),
+                    repTarget: slotB.repTarget || ''
+                };
+                items.splice(idxB, 1);
+            } else {
+                const muscleB = document.getElementById('combine-b-muscle').value;
+                const exBName = document.getElementById('combine-b-exercise').value;
+                if (!exBName) {
+                    showToast('Selecciona un ejercicio de la Guía Nippard', true);
+                    return;
+                }
+                subB = {
+                    id: `bw-custom-${Date.now()}`,
+                    label: 'b',
+                    muscle: muscleB,
+                    name: exBName,
+                    repTarget: '10–15 reps'
+                };
+            }
+
+            const customTitle = document.getElementById('combine-title').value.trim() || `Super Serie ${slotA.muscle} / ${subB.muscle}`;
+            const newIdxA = items.findIndex(i => i.id === slotA.id);
+
+            const supersetObj = {
+                id: `bw-ss-${Date.now()}`,
+                isSuperset: true,
+                isCustom: true,
+                title: customTitle,
+                subExercises: [
+                    {
+                        id: slotA.id,
+                        label: 'a',
+                        muscle: slotA.muscle,
+                        name: exAName,
+                        repTarget: slotA.repTarget || ''
+                    },
+                    subB
+                ]
+            };
+
+            items.splice(newIdxA, 1, supersetObj);
+            saveDayItems(activeDayIndex, items);
+
+            closeCombineModal();
+            rerenderCurrentDay();
+            showToast(`¡${customTitle} creada!`);
+        }
+
+        function ungroupSuperset(supersetId) {
+            const items = getDayItems(activeDayIndex);
+            const idx = items.findIndex(i => i.id === supersetId && i.isSuperset);
+            if (idx === -1) return;
+
+            const ss = items[idx];
+            const restoredStandalones = ss.subExercises.map(sub => ({
+                id: sub.id,
+                muscle: sub.muscle,
+                name: getActiveExerciseName(sub),
+                repTarget: sub.repTarget || ''
+            }));
+
+            items.splice(idx, 1, ...restoredStandalones);
+            saveDayItems(activeDayIndex, items);
+            rerenderCurrentDay();
+            showToast('Super Serie separada en ejercicios individuales');
+        }
+
+        function resetDayLayout() {
+            delete customDayItems[activeDayIndex];
+            localStorage.setItem('bwTrackerDayItems', JSON.stringify(customDayItems));
+            rerenderCurrentDay();
+            showToast('Rutina original del día restaurada');
+        }
+
+        /* =====================================================================
+           6. ACCIONES DE SERIES, CAMBIO DE EJERCICIO Y GUARDADO
+           ===================================================================== */
+        function toggleSwapper(slotId) {
+            openSwappers[slotId] = !openSwappers[slotId];
+            rerenderCurrentDay();
+        }
+
+        function changeSlotExercise(slotId, newExerciseName) {
+            exerciseSwaps[slotId] = newExerciseName;
+            localStorage.setItem('bwTrackerSwaps', JSON.stringify(exerciseSwaps));
+            openSwappers[slotId] = false;
+            rerenderCurrentDay();
+            showToast(`Ejercicio cambiado a: ${newExerciseName}`);
+        }
+
+        function resetExerciseSwap(slotId) {
+            delete exerciseSwaps[slotId];
+            localStorage.setItem('bwTrackerSwaps', JSON.stringify(exerciseSwaps));
+            openSwappers[slotId] = false;
+            rerenderCurrentDay();
+            showToast('Ejercicio base restaurado');
+        }
+
+        function rerenderCurrentDay() {
+            const currentDay = routineData.find(r => r.dayIndex === activeDayIndex);
+            if (currentDay) {
+                const items = getDayItems(activeDayIndex);
+                renderRoutineHeaderActions(activeDayIndex, items);
+                renderExercises(currentDay, items);
+            }
+        }
+
+        function updateSetData(key, setIndex, field, value) {
+            if (activeExerciseInputs[key] && activeExerciseInputs[key][setIndex]) {
+                activeExerciseInputs[key][setIndex][field] = value;
+            }
+        }
+
+        function addSet(key) {
+            const sets = activeExerciseInputs[key];
+            if (!sets) return;
+            const lastSet = sets[sets.length - 1] || { weight: '', reps: '', rir: '1' };
+            sets.push({ weight: lastSet.weight, reps: lastSet.reps, rir: lastSet.rir });
+            rerenderCurrentDay();
+        }
+
+        function removeSet(key) {
+            const sets = activeExerciseInputs[key];
+            if (!sets || sets.length <= 1) {
+                showToast('Debe quedar al menos 1 serie', true);
+                return;
+            }
+            sets.pop();
+            rerenderCurrentDay();
+        }
+
+        function persistExerciseLog(slotId, exerciseName) {
+            const key = `${slotId}::${exerciseName}`;
+            const setsData = activeExerciseInputs[key] || [];
+            const bwOnly = isBodyweightOnlyExercise(exerciseName);
+
+            const validSets = setsData.filter(s => {
+                if (bwOnly) return s.reps !== '' && parseFloat(s.reps) > 0;
+                return s.weight !== '' && s.reps !== '' && parseFloat(s.reps) > 0;
+            }).map(s => ({
+                weight: bwOnly ? 0 : parseFloat(s.weight),
+                reps: parseInt(s.reps, 10),
+                rir: bwOnly ? '' : String(s.rir ?? '2')
+            }));
+
+            if (validSets.length === 0) return false;
+
+            const todayStr = getTodayStr();
+            trainingLogs = trainingLogs.filter(log => !(log.date === todayStr && log.exercise === exerciseName));
+            trainingLogs.push({
+                date: todayStr,
+                exercise: exerciseName,
+                sets: validSets
+            });
+
+            localStorage.setItem('bwTrackerLogs', JSON.stringify(trainingLogs));
+            return true;
+        }
+
+        function saveSlotData(slotId, exerciseName) {
+            const saved = persistExerciseLog(slotId, exerciseName);
+            if (!saved) {
+                const msg = isBodyweightOnlyExercise(exerciseName)
+                    ? 'Ingresa al menos las repeticiones'
+                    : 'Ingresa peso y repeticiones válidos';
+                showToast(msg, true);
+                return;
+            }
+            showToast(`¡${exerciseName} guardado!`);
+        }
+
+        function saveSupersetData(supersetId) {
+            const items = getDayItems(activeDayIndex);
+            const superset = items.find(i => i.id === supersetId && i.isSuperset);
+            if (!superset || !superset.subExercises) return;
+
+            let savedCount = 0;
+            superset.subExercises.forEach(sub => {
+                const exName = getActiveExerciseName(sub);
+                if (persistExerciseLog(sub.id, exName)) {
+                    savedCount++;
+                }
+            });
+
+            if (savedCount === 0) {
+                showToast('Ingresa datos en al menos uno de los ejercicios de la Super Serie', true);
+                return;
+            }
+            showToast(savedCount === superset.subExercises.length
+                ? '¡Super Serie completa guardada!'
+                : 'Se guardó el ejercicio con datos de la Super Serie');
+        }
+
+        /* =====================================================================
+           7. MÓDULO PESO CORPORAL, CALORÍAS Y PROTEÍNA (GANANCIA LIMPIA)
+           ===================================================================== */
+        function initBodyTab() {
+            const tdeeInput = document.getElementById('input-tdee');
+            if (tdeeInput) tdeeInput.value = tdeeTarget;
+
+            const todayStr = getTodayStr();
+            const todayLog = bodyLogs.find(b => b.date === todayStr);
+            if (todayLog) {
+                document.getElementById('input-bodyweight').value = todayLog.weight || '';
+                document.getElementById('input-calories').value = todayLog.calories || '';
+                document.getElementById('input-protein').value = todayLog.protein || '';
+            }
+
+            renderBodyDashboard();
+        }
+
+        function saveTdeeConfig(val) {
+            const parsed = parseInt(val, 10);
+            if (parsed && parsed > 1000) {
+                tdeeTarget = parsed;
+                localStorage.setItem('bwTrackerTdee', String(tdeeTarget));
+                renderBodyDashboard();
+                showToast(`Mantenimiento actualizado a ${tdeeTarget} kcal`);
+            }
+        }
+
+        function saveBodyLog() {
+            const weight = parseFloat(document.getElementById('input-bodyweight').value);
+            const calories = parseInt(document.getElementById('input-calories').value, 10);
+            const protein = parseInt(document.getElementById('input-protein').value, 10);
+
+            if (!weight && !calories && !protein) {
+                showToast('Ingresa al menos tu peso, calorías o proteína de hoy', true);
+                return;
+            }
+
+            const todayStr = getTodayStr();
+            bodyLogs = bodyLogs.filter(b => b.date !== todayStr);
+            bodyLogs.push({
+                date: todayStr,
+                weight: weight || null,
+                calories: calories || null,
+                protein: protein || null
+            });
+            bodyLogs.sort((a, b) => a.date.localeCompare(b.date));
+            localStorage.setItem('bwTrackerBody', JSON.stringify(bodyLogs));
+
+            renderBodyDashboard();
+            showToast('Registro de peso y nutrición guardado');
+        }
+
+        function renderBodyDashboard() {
+            const badge = document.getElementById('balance-badge');
+            const summaryEl = document.getElementById('body-summary-cards');
+            const listEl = document.getElementById('body-history-list');
+
+            const sorted = [...bodyLogs].sort((a, b) => a.date.localeCompare(b.date));
+            const todayStr = getTodayStr();
+            const todayEntry = sorted.find(b => b.date === todayStr);
+
+            if (todayEntry && todayEntry.calories) {
+                const diff = todayEntry.calories - tdeeTarget;
+                if (diff >= -100 && diff <= 200) {
+                    badge.innerText = `Óptimo (${diff >= 0 ? '+' : ''}${diff} kcal)`;
+                    badge.className = 'px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0';
+                } else if (diff > 200) {
+                    badge.innerText = `+${diff} kcal (Alto)`;
+                    badge.className = 'px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0';
+                } else {
+                    badge.innerText = `${diff} kcal (Déficit)`;
+                    badge.className = 'px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-500/15 text-blue-300 border border-blue-500/30 shrink-0';
+                }
+            } else {
+                badge.innerText = 'Sin registro hoy';
+                badge.className = 'px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 shrink-0';
+            }
+
+            const weightsOnly = sorted.filter(b => b.weight);
+            const latestW = weightsOnly.length ? weightsOnly[weightsOnly.length - 1].weight : null;
+            const firstW = weightsOnly.length ? weightsOnly[0].weight : null;
+            const deltaW = (latestW !== null && firstW !== null) ? Math.round((latestW - firstW) * 10) / 10 : null;
+
+            const protOnly = sorted.filter(b => b.protein);
+            const avgProt = protOnly.length
+                ? Math.round(protOnly.reduce((acc, b) => acc + b.protein, 0) / protOnly.length)
+                : null;
+
+            summaryEl.innerHTML = `
+                <div class="bg-[#11192c] border border-slate-800 rounded-2xl p-3 text-center">
+                    <span class="text-[10px] font-semibold text-slate-400 uppercase block">Peso Actual</span>
+                    <span class="text-lg font-extrabold text-white mt-0.5 block">${latestW !== null ? latestW + ' kg' : '--'}</span>
+                </div>
+                <div class="bg-[#11192c] border border-slate-800 rounded-2xl p-3 text-center">
+                    <span class="text-[10px] font-semibold text-slate-400 uppercase block">Cambio Peso</span>
+                    <span class="text-lg font-extrabold text-fuchsia-300 mt-0.5 block">${deltaW !== null ? (deltaW > 0 ? '+' : '') + deltaW + ' kg' : '--'}</span>
+                </div>
+                <div class="bg-[#11192c] border border-slate-800 rounded-2xl p-3 text-center">
+                    <span class="text-[10px] font-semibold text-slate-400 uppercase block">Prot. Prom.</span>
+                    <span class="text-lg font-extrabold ${avgProt !== null && avgProt >= 105 ? 'text-emerald-400' : 'text-amber-400'} mt-0.5 block">${avgProt !== null ? avgProt + ' g' : '--'}</span>
+                </div>
+            `;
+
+            if (sorted.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center p-8 bg-[#0d1424] rounded-2xl border border-slate-800 border-dashed">
+                        <p class="text-slate-400 text-xs">Aún no hay registros de peso, calorías o proteína.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = [...sorted].reverse().map(entry => {
+                const diff = entry.calories ? entry.calories - tdeeTarget : null;
+                let diffBadge = '';
+                if (diff !== null) {
+                    const optimal = diff >= -100 && diff <= 200;
+                    const cls = optimal
+                        ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25'
+                        : (diff > 200 ? 'bg-amber-500/15 text-amber-400 border-amber-500/25' : 'bg-blue-500/15 text-blue-300 border-blue-500/25');
+                    diffBadge = `<span class="px-2 py-0.5 rounded-lg text-[11px] font-semibold border ${cls}">${diff > 0 ? '+' : ''}${diff} kcal</span>`;
+                }
+                return `
+                    <div class="bg-[#11192c] border border-slate-800/90 rounded-2xl px-4 py-3 flex flex-wrap justify-between items-center gap-2">
+                        <span class="text-sm font-bold text-white">${formatShortDateEs(entry.date)}</span>
+                        <div class="flex flex-wrap items-center gap-2 text-xs">
+                            <span class="font-bold text-blue-300">${entry.weight ? entry.weight + ' kg' : '--'}</span>
+                            <span class="text-slate-400">${entry.calories ? entry.calories + ' kcal' : '--'}</span>
+                            ${entry.protein ? `<span class="font-semibold text-fuchsia-300">${entry.protein}g prot</span>` : ''}
+                            ${diffBadge}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /* =====================================================================
+           8. ANALÍTICAS AVANZADAS (VOLUMEN TOTAL, PESO MÁX, 1RM Y DESGLOSE)
+           ===================================================================== */
+        function calculateE1RM(weight, reps) {
+            if (!weight || weight <= 0 || !reps || reps <= 0) return 0;
+            if (reps === 1) return weight;
+            return weight * (1 + reps / 30);
+        }
+
+        function computeExerciseStats(exerciseName) {
+            const bwOnly = isBodyweightOnlyExercise(exerciseName);
+            const logs = trainingLogs
+                .filter(l => l.exercise === exerciseName)
+                .sort((a, b) => a.date.localeCompare(b.date));
+
+            let bestVolume = 0;
+            let best1RM = 0;
+
+            const sessions = logs.map(log => {
+                let totalVol = 0;
+                let maxWeight = 0;
+                let maxE1RM = 0;
+                let totalReps = 0;
+
+                const detailedSets = log.sets.map((s, sIdx) => {
+                    const w = bwOnly ? 0 : (parseFloat(s.weight) || 0);
+                    const r = parseInt(s.reps, 10) || 0;
+                    const vol = bwOnly ? r : (w * r);
+                    const e1rm = bwOnly ? 0 : calculateE1RM(w, r);
+
+                    totalVol += vol;
+                    totalReps += r;
+                    if (w > maxWeight) maxWeight = w;
+                    if (e1rm > maxE1RM) maxE1RM = e1rm;
+
+                    return {
+                        index: sIdx + 1,
+                        weight: w,
+                        reps: r,
+                        rir: s.rir,
+                        vol: Math.round(vol * 10) / 10
+                    };
+                });
+
+                totalVol = Math.round(totalVol * 10) / 10;
+                maxE1RM = Math.round(maxE1RM * 10) / 10;
+
+                if (totalVol > bestVolume) bestVolume = totalVol;
+                if (maxE1RM > best1RM) best1RM = maxE1RM;
+
+                return {
+                    date: log.date,
+                    label: formatShortDateEs(log.date),
+                    totalVol,
+                    maxWeight,
+                    maxE1RM,
+                    totalReps,
+                    setCount: detailedSets.length,
+                    sets: detailedSets,
+                    volDiff: null,
+                    rmDiff: null
+                };
+            });
+
+            for (let i = 1; i < sessions.length; i++) {
+                sessions[i].volDiff = Math.round((sessions[i].totalVol - sessions[i - 1].totalVol) * 10) / 10;
+                sessions[i].rmDiff = Math.round((sessions[i].maxE1RM - sessions[i - 1].maxE1RM) * 10) / 10;
+            }
+
+            return {
+                exerciseName,
+                bwOnly,
+                sessions,
+                sessionCount: sessions.length,
+                bestVolume: Math.round(bestVolume),
+                best1RM: Math.round(best1RM)
+            };
+        }
+
+        function renderAnalyticsPanel(exerciseName, containerEl, canvasId, isModal = false) {
+            const stats = computeExerciseStats(exerciseName);
+
+            if (stats.sessionCount === 0) {
+                if (isModal) {
+                    document.getElementById('modal-ex-title').innerText = exerciseName;
+                    document.getElementById('modal-ex-subtitle').innerText = '0 sesiones registradas';
+                }
+                containerEl.innerHTML = `
+                    <div class="text-center p-10 bg-[#0d1424] rounded-2xl border border-slate-800 border-dashed">
+                        <i class="ph ph-chart-line text-4xl text-slate-600 mb-3 block"></i>
+                        <p class="text-slate-300 font-semibold text-sm">Aún no hay sesiones registradas para "${exerciseName}"</p>
+                        <p class="text-xs text-slate-500 mt-1">Guarda tu primera sesión en la pestaña Rutina para ver tus curvas de Volumen, 1RM y Peso Máximo.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const unit = stats.bwOnly ? 'reps' : 'kg';
+            const subtitleText = stats.bwOnly
+                ? `${stats.sessionCount} ${stats.sessionCount === 1 ? 'sesión' : 'sesiones'} · Mejor Volumen: ${stats.bestVolume} reps`
+                : `${stats.sessionCount} ${stats.sessionCount === 1 ? 'sesión' : 'sesiones'} · Mejor Volumen: ${stats.bestVolume} kg · Mejor 1RM: ${stats.best1RM} kg`;
+
+            if (isModal) {
+                document.getElementById('modal-ex-title').innerText = exerciseName;
+                document.getElementById('modal-ex-subtitle').innerText = subtitleText;
+            }
+
+            const reversedSessions = [...stats.sessions].reverse();
+            const breakdownHTML = reversedSessions.map((sess, rIdx) => {
+                const isFirstRecord = (rIdx === reversedSessions.length - 1);
+
+                let badgesHTML = '';
+                if (isFirstRecord) {
+                    badgesHTML = `<span class="bg-blue-500/15 text-blue-400 border border-blue-500/25 px-2.5 py-1 rounded-lg text-[11px] font-semibold">Primera marca</span>`;
+                } else {
+                    const volSign = sess.volDiff > 0 ? '+' : '';
+                    const volClass = sess.volDiff >= 0
+                        ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25'
+                        : 'bg-amber-500/15 text-amber-400 border-amber-500/25';
+
+                    badgesHTML += `<span class="border px-2 py-1 rounded-lg text-[11px] font-semibold ${volClass}">${volSign}${sess.volDiff} ${unit} Vol</span>`;
+
+                    if (!stats.bwOnly) {
+                        const rmSign = sess.rmDiff > 0 ? '+' : '';
+                        const rmClass = sess.rmDiff >= 0
+                            ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25'
+                            : 'bg-amber-500/15 text-amber-400 border-amber-500/25';
+                        badgesHTML += `<span class="border px-2 py-1 rounded-lg text-[11px] font-semibold ${rmClass}">${rmSign}${sess.rmDiff} kg 1RM</span>`;
+                    }
+                }
+
+                badgesHTML += `<span class="border border-purple-500/40 bg-purple-500/10 text-purple-300 px-2.5 py-1 rounded-lg text-[11px] font-bold">Total: ${sess.totalVol} ${unit}</span>`;
+
+                const setsGridHTML = sess.sets.map(s => {
+                    if (stats.bwOnly) {
+                        return `
+                            <div class="bg-[#0b1120] border border-slate-800/90 rounded-xl px-3 py-2 flex items-center justify-between text-xs">
+                                <span class="text-slate-500 font-semibold">S${s.index}</span>
+                                <span class="text-white font-bold">${s.reps} reps</span>
+                                <span class="text-purple-400 font-semibold">${s.vol} reps</span>
+                            </div>
+                        `;
+                    }
+                    return `
+                        <div class="bg-[#0b1120] border border-slate-800/90 rounded-xl px-3 py-2 flex items-center justify-between gap-2 text-xs">
+                            <span class="text-slate-500 font-semibold">S${s.index}</span>
+                            <span class="text-white font-bold">${s.weight} kg × ${s.reps}</span>
+                            <span class="text-slate-400 font-medium">${s.rir !== '' ? 'RIR ' + s.rir : '--'}</span>
+                            <span class="text-purple-400 font-semibold">${s.vol} kg vol</span>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="bg-[#11192c] border border-slate-800/90 rounded-2xl p-4 space-y-3">
+                        <div class="flex flex-wrap justify-between items-center gap-2">
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-sm font-extrabold text-white">${sess.label}</span>
+                                <span class="text-xs text-slate-400">(${sess.setCount} ${sess.setCount === 1 ? 'serie' : 'series'} · ${sess.totalReps} reps)</span>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                ${badgesHTML}
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            ${setsGridHTML}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            containerEl.innerHTML = `
+                ${!isModal ? `
+                    <div class="px-1">
+                        <h2 class="text-xl font-extrabold text-white tracking-tight">${exerciseName}</h2>
+                        <p class="text-xs text-slate-400 mt-1">${subtitleText}</p>
+                    </div>
+                ` : ''}
+
+                <!-- Tarjeta de Gráfica Multi-Métrica -->
+                <div class="bg-[#0a101f] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-lg">
+                    <div class="flex flex-wrap justify-center items-center gap-x-5 gap-y-2 mb-3 text-xs font-medium text-slate-300">
+                        <span class="flex items-center gap-1.5">
+                            <span class="w-3.5 h-3.5 rounded-full border-2 border-purple-400 bg-purple-500/20 inline-block"></span>
+                            Volumen Total (${unit})
+                        </span>
+                        ${!stats.bwOnly ? `
+                            <span class="flex items-center gap-1.5">
+                                <span class="w-3.5 h-3.5 rounded-full border-2 border-emerald-400 bg-emerald-500/15 inline-block"></span>
+                                1RM Estimado (kg)
+                            </span>
+                            <span class="flex items-center gap-1.5">
+                                <span class="w-3.5 h-3.5 rounded-full border-2 border-blue-400 bg-blue-500/15 inline-block"></span>
+                                Peso Máximo (kg)
+                            </span>
+                        ` : ''}
+                    </div>
+                    <div class="relative h-[250px] sm:h-[280px] w-full">
+                        <canvas id="${canvasId}"></canvas>
+                    </div>
+                </div>
+
+                <!-- Desglose por Fecha -->
+                <div class="space-y-3">
+                    <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2 px-1">
+                        <i class="ph ph-clock-counter-clockwise text-purple-400 text-lg"></i>
+                        Desglose por Fecha (Más reciente arriba)
+                    </h3>
+                    <div class="space-y-3">
+                        ${breakdownHTML}
+                    </div>
+                </div>
+            `;
+
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 0, 260);
+            gradient.addColorStop(0, 'rgba(168, 85, 247, 0.28)');
+            gradient.addColorStop(1, 'rgba(168, 85, 247, 0.0)');
+
+            const labels = stats.sessions.map(s => s.label);
+            const datasets = [
+                {
+                    label: `Volumen Total (${unit})`,
+                    data: stats.sessions.map(s => s.totalVol),
+                    borderColor: '#b76cff',
+                    backgroundColor: gradient,
+                    borderWidth: 2.5,
+                    fill: true,
+                    tension: 0.15,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#1e1033',
+                    pointBorderColor: '#c084fc',
+                    pointBorderWidth: 2.5,
+                    yAxisID: 'y'
+                }
+            ];
+
+            if (!stats.bwOnly) {
+                datasets.push(
+                    {
+                        label: '1RM Estimado (kg)',
+                        data: stats.sessions.map(s => s.maxE1RM),
+                        borderColor: '#10b981',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.15,
+                        pointRadius: 4.5,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#071f18',
+                        pointBorderColor: '#10b981',
+                        pointBorderWidth: 2,
+                        yAxisID: 'y1'
+                    },
+                    {
+                        label: 'Peso Máximo (kg)',
+                        data: stats.sessions.map(s => s.maxWeight),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0.15,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#0b1830',
+                        pointBorderColor: '#3b82f6',
+                        pointBorderWidth: 2,
+                        yAxisID: 'y1'
+                    }
+                );
+            }
+
+            if (isModal && modalChartInstance) modalChartInstance.destroy();
+            if (!isModal && tabChartInstance) tabChartInstance.destroy();
+
+            const instance = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#11192c',
+                            borderColor: '#334155',
+                            borderWidth: 1,
+                            titleColor: '#ffffff',
+                            bodyColor: '#e2e8f0',
+                            padding: 10,
+                            cornerRadius: 10
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false, drawBorder: false },
+                            ticks: { color: '#94a3b8', font: { size: 11, family: 'Inter' } }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            grid: { color: 'rgba(148, 163, 184, 0.08)' },
+                            border: { display: false },
+                            ticks: {
+                                color: '#c084fc',
+                                font: { size: 11, family: 'Inter' },
+                                callback: v => `${v} ${unit}`
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: !stats.bwOnly,
+                            position: 'right',
+                            grid: { drawOnChartArea: false },
+                            border: { display: false },
+                            ticks: {
+                                color: '#34d399',
+                                font: { size: 11, family: 'Inter' },
+                                callback: v => `${v} kg`
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (isModal) modalChartInstance = instance;
+            else tabChartInstance = instance;
+        }
+
+        function renderRecompChart(selectedExercise) {
+            const wrapper = document.getElementById('recomp-chart-wrapper');
+            if (recompChartInstance) {
+                recompChartInstance.destroy();
+                recompChartInstance = null;
+            }
+
+            const weightMap = {};
+            bodyLogs.forEach(b => {
+                if (b.weight) weightMap[b.date] = b.weight;
+            });
+
+            const strengthMap = {};
+            if (selectedExercise) {
+                const stats = computeExerciseStats(selectedExercise);
+                stats.sessions.forEach(s => {
+                    if (s.maxE1RM > 0) strengthMap[s.date] = s.maxE1RM;
+                    else if (s.maxWeight > 0) strengthMap[s.date] = s.maxWeight;
+                });
+            }
+
+            const allDates = [...new Set([...Object.keys(weightMap), ...Object.keys(strengthMap)])].sort();
+
+            if (allDates.length === 0) {
+                wrapper.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Registra tu peso corporal en "Peso & Kcal" y tus series en "Rutina" para ver la comparativa Fuerza vs. Peso Corporal.</p>`;
+                return;
+            }
+
+            wrapper.innerHTML = `
+                <div class="flex flex-wrap justify-center items-center gap-x-5 gap-y-2 mb-2 text-xs font-medium text-slate-300">
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-3.5 h-3.5 rounded-full border-2 border-emerald-400 bg-emerald-500/15 inline-block"></span>
+                        1RM ${selectedExercise || 'Fuerza'} (kg)
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-3.5 h-3.5 rounded-full border-2 border-blue-400 bg-blue-500/15 inline-block"></span>
+                        Peso Corporal (kg)
+                    </span>
+                </div>
+                <div class="relative h-[220px] w-full">
+                    <canvas id="recompProgressChart"></canvas>
+                </div>
+            `;
+
+            const ctx = document.getElementById('recompProgressChart').getContext('2d');
+            recompChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: allDates.map(formatShortDateEs),
+                    datasets: [
+                        {
+                            label: `1RM ${selectedExercise || 'Fuerza'} (kg)`,
+                            data: allDates.map(d => strengthMap[d] ?? null),
+                            borderColor: '#10b981',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2.5,
+                            spanGaps: true,
+                            tension: 0.2,
+                            pointRadius: 4.5,
+                            pointBackgroundColor: '#071f18',
+                            pointBorderColor: '#10b981',
+                            pointBorderWidth: 2,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Peso Corporal (kg)',
+                            data: allDates.map(d => weightMap[d] ?? null),
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2.5,
+                            borderDash: [5, 5],
+                            spanGaps: true,
+                            tension: 0.2,
+                            pointRadius: 4.5,
+                            pointBackgroundColor: '#0b1830',
+                            pointBorderColor: '#3b82f6',
+                            pointBorderWidth: 2,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#11192c',
+                            borderColor: '#334155',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8', font: { size: 11 } }
+                        },
+                        y: {
+                            position: 'left',
+                            grid: { color: 'rgba(148, 163, 184, 0.08)' },
+                            border: { display: false },
+                            ticks: { color: '#34d399', font: { size: 11 }, callback: v => `${v} kg` }
+                        },
+                        y1: {
+                            position: 'right',
+                            grid: { drawOnChartArea: false },
+                            border: { display: false },
+                            ticks: { color: '#60a5fa', font: { size: 11 }, callback: v => `${v} kg` }
+                        }
+                    }
+                }
+            });
+        }
+
+        function switchTab(tabName) {
+            const tabs = ['workout', 'body', 'analytics'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const view = document.getElementById(`view-${t}`);
+                if (t === tabName) {
+                    btn.classList.add('tab-active');
+                    view.classList.remove('hidden');
+                } else {
+                    btn.classList.remove('tab-active');
+                    view.classList.add('hidden');
+                }
+            });
+
+            if (tabName === 'body') initBodyTab();
+            if (tabName === 'analytics') initAnalyticsTab();
+        }
+
+        function initAnalyticsTab() {
+            const select = document.getElementById('chart-exercise-select');
+            const prevValue = select.value;
+            select.innerHTML = '';
+
+            const uniqueExercises = [...new Set(trainingLogs.map(log => log.exercise))];
+
+            if (uniqueExercises.length === 0) {
+                select.innerHTML = '<option value="">Sin ejercicios registrados aún</option>';
+                select.disabled = true;
+                document.getElementById('analytics-tab-content').innerHTML = `
+                    <div class="text-center p-10 bg-[#0d1424] rounded-2xl border border-slate-800 border-dashed">
+                        <i class="ph ph-chart-line-up text-4xl text-slate-600 mb-3 block"></i>
+                        <p class="text-slate-300 font-semibold">Todavía no tienes registros guardados</p>
+                        <p class="text-xs text-slate-500 mt-1">Registra y guarda tu primer ejercicio en la pestaña Rutina para desbloquear tus gráficas de Volumen, 1RM y Peso Máximo.</p>
+                    </div>
+                `;
+                if (tabChartInstance) {
+                    tabChartInstance.destroy();
+                    tabChartInstance = null;
+                }
+                renderRecompChart(null);
+                return;
+            }
+
+            select.disabled = false;
+            uniqueExercises.forEach(ex => {
+                const opt = document.createElement('option');
+                opt.value = ex;
+                opt.innerText = ex;
+                select.appendChild(opt);
+            });
+
+            if (prevValue && uniqueExercises.includes(prevValue)) {
+                select.value = prevValue;
+            }
+            updateAnalyticsTab();
+        }
+
+        function updateAnalyticsTab() {
+            const ex = document.getElementById('chart-exercise-select').value;
+            if (!ex) return;
+            const container = document.getElementById('analytics-tab-content');
+            renderAnalyticsPanel(ex, container, 'tabProgressChart', false);
+            renderRecompChart(ex);
+        }
+
+        function openExerciseAnalyticsModal(exerciseName) {
+            const modal = document.getElementById('exercise-analytics-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            const body = document.getElementById('modal-analytics-body');
+            renderAnalyticsPanel(exerciseName, body, 'modalProgressChart', true);
+        }
+
+        function closeExerciseAnalyticsModal() {
+            const modal = document.getElementById('exercise-analytics-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            if (modalChartInstance) {
+                modalChartInstance.destroy();
+                modalChartInstance = null;
+            }
+        }
+
+        /* =====================================================================
+           9. MODAL BIBLIOTECA JEFF NIPPARD (CONSULTA COMPLETA POR MÚSCULO)
+           ===================================================================== */
+        function openLibraryModal() {
+            const modal = document.getElementById('library-modal');
+            const filter = document.getElementById('library-muscle-filter');
+
+            if (filter.options.length === 0) {
+                const allOpt = document.createElement('option');
+                allOpt.value = 'ALL';
+                allOpt.innerText = 'Todos los grupos musculares';
+                filter.appendChild(allOpt);
+
+                Object.keys(nippardExerciseDB).forEach(muscle => {
+                    const opt = document.createElement('option');
+                    opt.value = muscle;
+                    opt.innerText = `${muscle} (${nippardExerciseDB[muscle].length} ejercicios)`;
+                    filter.appendChild(opt);
+                });
+            }
+
+            renderLibraryList();
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeLibraryModal() {
+            const modal = document.getElementById('library-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function renderLibraryList() {
+            const filterVal = document.getElementById('library-muscle-filter').value;
+            const listEl = document.getElementById('library-list');
+            const muscles = filterVal === 'ALL' ? Object.keys(nippardExerciseDB) : [filterVal];
+
+            listEl.innerHTML = muscles.map(muscle => {
+                const exItems = nippardExerciseDB[muscle].map(ex => {
+                    const tierBadge = ex.tier === 'S'
+                        ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/40 shrink-0">S-TIER</span>`
+                        : `<span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-purple-500/15 text-purple-300 border border-purple-500/30 shrink-0">A-TIER</span>`;
+                    return `
+                        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex justify-between items-start gap-2">
+                            <div>
+                                <div class="text-sm font-bold text-white">${ex.name}</div>
+                                <div class="text-xs text-slate-400 mt-0.5">${ex.cue || ''}</div>
+                            </div>
+                            ${tierBadge}
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="space-y-2 mb-4">
+                        <h4 class="text-xs font-extrabold uppercase tracking-wider text-fuchsia-400 px-1">${muscle}</h4>
+                        <div class="space-y-2">${exItems}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /* =====================================================================
+           10. TEMPORIZADOR (90s, 2m, 2:30, 3m), TOAST, READINESS Y BACKUP
+           ===================================================================== */
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = message;
+
+            if (isError) {
+                toast.classList.remove('bg-fuchsia-600');
+                toast.classList.add('bg-red-600');
+                toast.querySelector('i').className = 'ph ph-warning-circle text-xl shrink-0';
+            } else {
+                toast.classList.remove('bg-red-600');
+                toast.classList.add('bg-fuchsia-600');
+                toast.querySelector('i').className = 'ph ph-check-circle text-xl shrink-0';
+            }
+
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            clearTimeout(window._toastTimeout);
+            window._toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+
+        let timerInterval;
+        let timeRemaining = 0;
+
+        function playBeep() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.14);
+                gain.gain.setValueAtTime(0, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.9, ctx.currentTime + 0.05);
+                gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.5);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.5);
+            } catch (e) {}
+        }
+
+        function updateTimerDisplay() {
+            const min = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
+            const sec = (timeRemaining % 60).toString().padStart(2, '0');
+            const display = document.getElementById('timer-display');
+            display.innerText = `${min}:${sec}`;
+            if (timeRemaining > 0 && timeRemaining <= 10) {
+                display.classList.add('text-red-400');
+                display.classList.remove('text-white');
+            } else {
+                display.classList.remove('text-red-400');
+                display.classList.add('text-white');
+            }
+        }
+
+        function startTimer(seconds) {
+            clearInterval(timerInterval);
+            timeRemaining = seconds;
+            updateTimerDisplay();
+            if (navigator.vibrate) navigator.vibrate(40);
+
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    playBeep();
+                    if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
+                    showToast('¡Descanso listo! Vamos por la siguiente serie.');
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            timeRemaining = 0;
+            updateTimerDisplay();
+        }
+
+        function checkReadiness() {
+            const todayStr = getTodayStr();
+            if (!readinessLogs[todayStr]) {
+                const modal = document.getElementById('readiness-modal');
+                const content = document.getElementById('readiness-content');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => content.classList.remove('translate-y-full'), 15);
+            }
+        }
+
+        function closeReadinessModal() {
+            const modal = document.getElementById('readiness-modal');
+            const content = document.getElementById('readiness-content');
+            content.classList.add('translate-y-full');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 280);
+        }
+
+        function updateRangeLabel(elementId, val, textArr) {
+            document.getElementById(elementId).innerText = `${textArr[val - 1]} (${val})`;
+        }
+
+        function saveReadiness() {
+            const sleep = parseFloat(document.getElementById('input-sleep').value);
+            const stress = parseInt(document.getElementById('input-stress').value, 10);
+            const doms = parseInt(document.getElementById('input-doms').value, 10);
+
+            const sleepScore = Math.min((sleep / 8) * 50, 50);
+            const stressScore = ((6 - stress) / 5) * 25;
+            const domsScore = ((6 - doms) / 5) * 25;
+            const totalScore = Math.round(sleepScore + stressScore + domsScore);
+
+            const todayStr = getTodayStr();
+            readinessLogs[todayStr] = { sleep, stress, doms, score: totalScore };
+            localStorage.setItem('bwTrackerReadiness', JSON.stringify(readinessLogs));
+
+            closeReadinessModal();
+            setTimeout(() => {
+                if (totalScore < 65) {
+                    showToast(`Score: ${totalScore}/100. Fatiga alta: cuida técnica y deja RIR 2.`, true);
+                } else if (totalScore > 85) {
+                    showToast(`Score: ${totalScore}/100. ¡A tope! Busca superar tus marcas hoy.`);
+                } else {
+                    showToast(`Score: ${totalScore}/100. Energía óptima para entrenar.`);
+                }
+            }, 400);
+        }
+
+        function exportData() {
+            const dataToExport = {
+                logs: trainingLogs,
+                readiness: readinessLogs,
+                swaps: exerciseSwaps,
+                dayItems: customDayItems,
+                bodyLogs,
+                tdeeTarget
+            };
+            const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `BitchesWorkout_Backup_${getTodayStr()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Backup JSON descargado');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported.logs) {
+                        trainingLogs = imported.logs;
+                        localStorage.setItem('bwTrackerLogs', JSON.stringify(trainingLogs));
+                    }
+                    if (imported.readiness) {
+                        readinessLogs = imported.readiness;
+                        localStorage.setItem('bwTrackerReadiness', JSON.stringify(readinessLogs));
+                    }
+                    if (imported.swaps) {
+                        exerciseSwaps = imported.swaps;
+                        localStorage.setItem('bwTrackerSwaps', JSON.stringify(exerciseSwaps));
+                    }
+                    if (imported.dayItems) {
+                        customDayItems = imported.dayItems;
+                        localStorage.setItem('bwTrackerDayItems', JSON.stringify(customDayItems));
+                    }
+                    if (imported.bodyLogs) {
+                        bodyLogs = imported.bodyLogs;
+                        localStorage.setItem('bwTrackerBody', JSON.stringify(bodyLogs));
+                    }
+                    if (imported.tdeeTarget) {
+                        tdeeTarget = imported.tdeeTarget;
+                        localStorage.setItem('bwTrackerTdee', String(tdeeTarget));
+                    }
+                    showToast('Datos importados. Actualizando...');
+                    setTimeout(() => location.reload(), 1200);
+                } catch (err) {
+                    showToast('Error al leer el archivo JSON', true);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        /* =====================================================================
+           11. PWA SERVICE WORKER (COMPATIBLE CON GITHUB PAGES)
+           ===================================================================== */
+        function setupPWA() {
+            if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW BitchesWorkout registrado:', reg.scope))
+                    .catch(err => console.log('SW omitido/error:', err));
+            }
+
+            let deferredPrompt;
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                const installContainer = document.getElementById('pwa-install-container');
+                installContainer.classList.remove('hidden');
+
+                document.getElementById('btn-install').addEventListener('click', () => {
+                    installContainer.classList.add('hidden');
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+                });
+            });
+        }
+    </script>
+</body>
+</html>
