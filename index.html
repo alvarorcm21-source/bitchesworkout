@@ -153,8 +153,8 @@
             <!-- Cabecera del Día + Botón Combinar Ejercicios -->
             <div id="routine-header" class="flex flex-wrap justify-between items-end gap-3">
                 <div class="min-w-0">
-                    <h2 id="routine-day-title" class="text-2xl font-extrabold text-white tracking-tight">Día 1: Lower A</h2>
-                    <p id="routine-day-desc" class="text-sm text-slate-400 mt-0.5">Glúteos e Isquios (≤ 90 min)</p>
+                    <h2 id="routine-day-title" class="text-2xl font-extrabold text-white tracking-tight">Día 1: Glúteos + Femorales</h2>
+                    <p id="routine-day-desc" class="text-sm text-slate-400 mt-0.5">Glúteos y femorales (Descanso 2–3m en pesados)</p>
                 </div>
                 <div id="routine-actions" class="flex items-center gap-2">
                     <!-- Botones generados dinámicamente (Combinar ejercicios / Restaurar día) -->
@@ -476,67 +476,67 @@
     <script>
         /* =====================================================================
            1. BASE DE DATOS COMPLETA DE EJERCICIOS RECOMENDADOS POR JEFF NIPPARD
-           Organizada por grupo muscular, destacando estabilidad y control
-           para desarrollar fuerza progresiva sin limitación inicial de brazos.
+           Organizada por grupo muscular, alineada con la rutina BitchesWorkout
+           y destacando estabilidad y control articular.
            ===================================================================== */
         const nippardExerciseDB = {
             'Glúteos': [
-                { name: 'Hip Thrust (Barra o Máquina)', tier: 'S', cue: 'Rey de contracción acortada del glúteo; pausa de 1s arriba sin arquear lumbar' },
+                { name: 'Hip thrust', tier: 'S', cue: 'Rey de contracción acortada del glúteo; pausa de 1s arriba sin arquear lumbar' },
+                { name: 'Patada de glúteo en polea', tier: 'S', cue: 'Aislamiento unilateral limpio; empuja hacia atrás en diagonal (30°) sin doblar lumbar' },
+                { name: 'Extensión de cadera a 45°', tier: 'S', cue: 'Espalda alta ligeramente redondeada y puntas hacia afuera para aislar glúteo mayor' },
                 { name: 'Sentadilla Búlgara (Enfoque Glúteo)', tier: 'S', cue: 'Torso inclinado 20° adelante y paso largo; usa una mano en apoyo para estabilidad' },
                 { name: 'Prensa con Pies Arriba', tier: 'S', cue: 'Pies altos en la plataforma: gran flexión de cadera sin depender de fuerza de brazos' },
-                { name: 'Patada de Glúteo en Polea', tier: 'S', cue: 'Aislamiento unilateral limpio; empuja hacia atrás en diagonal (30°) sin doblar lumbar' },
                 { name: 'Step-Ups Altos (Con Apoyo)', tier: 'S', cue: 'Sostente del rack con una mano para máxima estabilidad y sube solo con la pierna arriba' },
                 { name: 'Zancadas Caminando (Lunges)', tier: 'S', cue: 'Gran estiramiento bajo carga en cada paso' },
-                { name: 'Sentadilla Sumo en Multipower', tier: 'A', cue: 'Postura amplia con puntas hacia afuera; la barra guiada elimina el peso en brazos' },
-                { name: 'Hiperextensiones 45° (Enfoque Glúteo)', tier: 'A', cue: 'Espalda alta redondeada y puntas hacia afuera para aislar glúteo mayor' }
+                { name: 'Sentadilla Sumo en Multipower', tier: 'A', cue: 'Postura amplia con puntas hacia afuera; la barra guiada elimina el peso en brazos' }
             ],
             'Isquiosurales': [
+                { name: 'Peso muerto rumano', tier: 'S', cue: 'Empuja la cadera atrás manteniendo la barra pegada; usa straps si el agarre se fatiga antes' },
+                { name: 'Curl femoral acostado', tier: 'A', cue: 'Cero carga de brazos; mantén la cadera pegada al banco al subir y controla la bajada' },
                 { name: 'Curl de Isquios sentado', tier: 'S', cue: 'Cadera flexionada = mayor estiramiento y más crecimiento sin exigir agarre' },
-                { name: 'Peso Muerto Rumano (RDL) en Multipower / Mancuernas', tier: 'S', cue: 'Empuja la cadera atrás; usa straps si sientes que tus antebrazos se cansan antes' },
-                { name: 'Curl de Isquios tumbado', tier: 'A', cue: 'Cero carga de brazos; mantén la cadera pegada al banco al subir' },
                 { name: 'Peso Muerto Piernas Rígidas', tier: 'S', cue: 'Estiramiento profundo desde el suelo (recomendado con straps)' },
                 { name: 'Hiperextensiones 45° (Enfoque Isquios)', tier: 'A', cue: 'Espalda neutra bajando controlado para estirar la cadena posterior' },
                 { name: 'Buenos Días en Multipower (Smith)', tier: 'A', cue: 'Bisagra de cadera guiada sin necesidad de sostener peso con las manos' }
             ],
             'Cuádriceps': [
-                { name: 'Sentadilla Hack', tier: 'S', cue: 'Estabilidad total: cero demanda de control en brazos para cargar pesado' },
+                { name: 'Sentadilla búlgara en Smith', tier: 'S', cue: 'La barra guiada aporta estabilidad total para concentrarte al 100% en pierna y glúteo' },
+                { name: 'Hack squat', tier: 'S', cue: 'Estabilidad total: cero demanda de control en brazos para cargar pesado con seguridad' },
+                { name: 'Extensión de cuádriceps', tier: 'S', cue: 'Único ejercicio que maximiza el recto femoral sin fatiga sistémica' },
+                { name: 'Prensa horizontal', tier: 'S', cue: 'Excelente estabilidad lumbar para sobrecargar cuádriceps y glúteos sin limitar por brazos' },
                 { name: 'Sentadilla en Multipower (Smith)', tier: 'S', cue: 'Pies ligeramente adelantados; controla la bajada con total seguridad' },
-                { name: 'Extensiones de Cuádriceps', tier: 'S', cue: 'Único ejercicio que maximiza el recto femoral sin fatiga sistémica' },
                 { name: 'Sentadilla Pendular', tier: 'S', cue: 'Perfil de resistencia perfecto y muy amigable con rodillas y espalda' },
                 { name: 'Prensa de Piernas (Pies Bajos)', tier: 'A', cue: 'Pies más abajo en la plataforma para máxima flexión de rodilla' },
-                { name: 'Sentadilla Búlgara (Enfoque Cuádriceps)', tier: 'A', cue: 'Torso más vertical dejando que la rodilla viaje adelante' },
-                { name: 'Sentadilla con barra', tier: 'A', cue: 'Compuesto clásico cuando ya tengas dominio técnico completo' },
-                { name: 'Sissy Squat Asistida', tier: 'A', cue: 'Estiramiento profundo sosteniéndote de un poste/rack' }
+                { name: 'Sentadilla con barra', tier: 'A', cue: 'Compuesto clásico cuando ya tengas dominio técnico completo' }
             ],
             'Abductores': [
-                { name: 'Máquina Abductores', tier: 'S', cue: 'Enfoque directo en glúteo medio y superior; inclina ligeramente el torso adelante' },
+                { name: 'Abductores', tier: 'S', cue: 'Enfoque directo en glúteo medio y superior; inclina ligeramente el torso adelante y controla el regreso' },
                 { name: 'Abducción de Cadera en Polea', tier: 'S', cue: 'Cruza ligeramente la pierna por delante para mayor rango en estiramiento' },
                 { name: 'Caminata Lateral con Banda', tier: 'A', cue: 'Excelente activación o remate metabólico' }
             ],
             'Aductores': [
-                { name: 'Máquina Aductores', tier: 'S', cue: 'Estímulo profundo del aductor mayor (da forma a la cara interna del muslo)' },
+                { name: 'Aductores', tier: 'S', cue: 'Estímulo profundo del aductor mayor; controla la apertura para aprovechar el estiramiento' },
                 { name: 'Aducción de Cadera en Polea', tier: 'S', cue: 'Alternativa unilateral con tensión constante' },
                 { name: 'Plancha Copenhagen', tier: 'A', cue: 'Fuerza isométrica de aductores y estabilidad de core' }
             ],
             'Gemelos': [
+                { name: 'Pantorrillas', tier: 'S', cue: 'Pausa de 1–2s en estiramiento abajo y subida explosiva con control arriba' },
                 { name: 'Elevaciones de gemelos en Prensa', tier: 'S', cue: 'Rodilla casi recta + pausa de 1–2s abajo; cero carga en hombros o brazos' },
                 { name: 'Elevaciones de gemelos de pie', tier: 'S', cue: 'Máximo estiramiento en la base para el gastrocnemio' },
-                { name: 'Elevación gemelos sentado', tier: 'A', cue: 'Enfoque directo en el sóleo (rodilla flexionada)' },
-                { name: 'Elevaciones de gemelos en Multipower', tier: 'A', cue: 'Usa un step debajo de las puntas para rango completo' }
+                { name: 'Elevación gemelos sentado', tier: 'A', cue: 'Enfoque directo en el sóleo (rodilla flexionada)' }
             ],
             'Espalda': [
-                { name: 'Jalón al Pecho Agarre Neutro', tier: 'S', cue: 'Muy estable y natural para hombros; enfócate en bajar los codos hacia la cadera' },
-                { name: 'Remo con Apoyo en Pecho', tier: 'S', cue: 'Máximo control sin balanceo: ideal para ganar fuerza en espalda sin depender de brazos' },
+                { name: 'Remo en máquina', tier: 'S', cue: 'Máximo control sin balanceo: ideal para ganar fuerza en espalda sin depender de brazos' },
+                { name: 'Jalón al pecho en máquina', tier: 'S', cue: 'Trayectoria guiada muy estable; lleva los codos hacia abajo y atrás' },
+                { name: 'Remo en T con apoyo', tier: 'S', cue: 'Cero fatiga lumbar y gran estabilidad para trapecio medio y romboides' },
+                { name: 'Remo sentado abierto', tier: 'S', cue: 'Codos abiertos a ~45–60° para enfatizar espalda alta y deltoides posterior' },
+                { name: 'Jalón neutro', tier: 'S', cue: 'Alineación muy natural para hombros; enfócate en bajar los codos hacia la cadera' },
                 { name: 'Dominadas Asistidas en Máquina / Jalón al pecho', tier: 'S', cue: 'La asistencia graduada permite progresar fuerza de tracción semana a semana' },
-                { name: 'Remo en polea baja apoyado', tier: 'S', cue: 'Trayectoria limpia y controlada para espalda media y dorsales' },
-                { name: 'Remo en T con Apoyo al Pecho', tier: 'S', cue: 'Gran estabilidad para trabajar trapecio medio y postura' },
                 { name: 'Remo Unilateral en Polea (Iliac Row)', tier: 'S', cue: 'Un brazo a la vez para mejor conexión mente-músculo con el dorsal' },
                 { name: 'Pullover en Polea Alta (Brazos Rectos)', tier: 'A', cue: 'Aísla el dorsal sin que el bíceps se fatigue primero' },
-                { name: 'Remo con Mancuerna a Una Mano', tier: 'A', cue: 'Apoya mano libre en banco para total control corporal' },
-                { name: 'Remo con Barra', tier: 'A', cue: 'Compuesto avanzado cuando el agarre y la espalda estén fuertes' }
+                { name: 'Remo con Mancuerna a Una Mano', tier: 'A', cue: 'Apoya mano libre en banco para total control corporal' }
             ],
             'Pectoral': [
-                { name: 'Press de Pecho en máquina', tier: 'S', cue: 'Recorrido guiado: construye fuerza de empuje sin inestabilidad en muñecas o brazos' },
+                { name: 'Press de pecho', tier: 'S', cue: 'Recorrido guiado: construye fuerza de empuje sin inestabilidad en muñecas o brazos' },
                 { name: 'Press Inclinado en Multipower (Smith)', tier: 'S', cue: 'Máxima estabilidad y seguridad para progresar peso en pectoral superior' },
                 { name: 'Pec-Deck', tier: 'S', cue: 'Aislamiento puro de pecho sin fatigar los tríceps de forma prematura' },
                 { name: 'Cruce de Poleas Sentado', tier: 'S', cue: 'Espalda apoyada para control absoluto y tensión constante' },
@@ -545,26 +545,26 @@
                 { name: 'Press de Banca', tier: 'A', cue: 'Compuesto clásico cuando exista buen control escapular' }
             ],
             'Hombros': [
-                { name: 'Elevaciones Laterales en Polea', tier: 'S', cue: 'Tensión constante desde abajo; mucho más controlable que mancuernas pesadas' },
+                { name: 'Face pull', tier: 'S', cue: 'Mejora la postura, fortalece el manguito rotador y trabaja deltoides posterior' },
+                { name: 'Elevaciones laterales', tier: 'S', cue: 'Sube en plano escapular (30° hacia adelante) con peso controlado sin encoger trapecios' },
+                { name: 'Elevaciones Laterales en Polea', tier: 'S', cue: 'Tensión constante desde abajo; muy fácil de controlar' },
                 { name: 'Press de Hombros en Máquina', tier: 'S', cue: 'Estabilidad total para fortalecer hombros y brazos con seguridad' },
-                { name: 'Face Pulls', tier: 'S', cue: 'Mejora la postura, fortalece el manguito rotador y protege los hombros' },
                 { name: 'Pájaros en Pec-Deck Inverso', tier: 'S', cue: 'Aislamiento guiado y muy cómodo para el deltoides posterior' },
                 { name: 'Elevaciones Posteriores en Polea', tier: 'S', cue: 'Excelente control en cada repetición' },
-                { name: 'Elevaciones Laterales', tier: 'A', cue: 'Con mancuernas ligeras en plano escapular (30° hacia adelante)' },
-                { name: 'Press de Hombros con Mancuernas Sentado', tier: 'A', cue: 'Respaldo alto a 80° para no arquear la zona lumbar' },
-                { name: 'Press Militar', tier: 'A', cue: 'Empuje vertical libre avanzado' }
+                { name: 'Press de Hombros con Mancuernas Sentado', tier: 'A', cue: 'Respaldo alto a 80° para no arquear la zona lumbar' }
             ],
             'Bíceps': [
+                { name: 'Curl de bíceps', tier: 'S', cue: 'Codos fijos a los costados, subida controlada y bajada lenta sin balanceo' },
+                { name: 'Curl martillo', tier: 'A', cue: 'Fortalece braquial, antebrazo y agarre (ayuda muchísimo en RDL y espalda)' },
+                { name: 'Bíceps en barra (2 enfoques)', tier: 'S', cue: 'Alterna agarre cerrado (cabeza larga) y agarre abierto (cabeza corta) manteniendo control total' },
                 { name: 'Curl Predicador en Máquina / Banco', tier: 'S', cue: 'Brazos apoyados: control total desde el día 1 y cero balanceo' },
                 { name: 'Curl Bayesiano en Polea', tier: 'S', cue: 'Tensión suave y constante con gran estiramiento del bíceps' },
                 { name: 'Curl de Bíceps inclinado', tier: 'S', cue: 'Banco a 45° para estirar la cabeza larga sin trampear' },
-                { name: 'Curl Martillo', tier: 'A', cue: 'Fortalece el antebrazo y el agarre (ayuda mucho en RDL y espalda)' },
-                { name: 'Curl con Barra EZ', tier: 'A', cue: 'Posición natural y cómoda para muñecas' },
                 { name: 'Curl Concentrado', tier: 'A', cue: 'Codo apoyado en el muslo para máximo control unilateral' }
             ],
             'Tríceps': [
-                { name: 'Extensión Tríceps en polea', tier: 'S', cue: 'Codos fijos a los costados: súper estable, seguro y fácil de progresar' },
-                { name: 'Extensión Tríceps Sobre la Cabeza en Polea', tier: 'S', cue: 'Estira la cabeza larga del tríceps para máxima hipertrofia' },
+                { name: 'Tríceps en polea', tier: 'S', cue: 'Codos fijos a los costados: súper estable, seguro y fácil de progresar' },
+                { name: 'Tríceps sobre la cabeza', tier: 'S', cue: 'Estira la cabeza larga del tríceps: la evidencia muestra mayor hipertrofia' },
                 { name: 'Extensión Katana en Polea', tier: 'S', cue: 'Alineación anatómica muy cómoda para codos y muñecas' },
                 { name: 'Fondos en Máquina para Tríceps', tier: 'A', cue: 'Permite ganar mucha fuerza de brazos sin cargar tu peso corporal' },
                 { name: 'Press Francés con Barra EZ / Mancuernas', tier: 'S', cue: 'Controlar bien el peso al bajar detrás de la cabeza' }
@@ -593,112 +593,105 @@
         }
 
         /* =====================================================================
-           2. RUTINA BASE DE 5 DÍAS (BITCHESWORKOUT - MÁX 90 MIN, 2-3m PESADOS)
-           - Lunes: Lower A (Glúteos e Isquios)
-           - Martes: Upper A (Torso Estable en Máquinas y Poleas)
-           - Miércoles: Lower B (Cuádriceps, Glúteo y Core)
-           - Jueves: Descanso Activo (SRA)
-           - Viernes: Upper B (Torso Completo + Superset Brazos Controlados)
-           - Sábado: Lower C (Glúteo Focus, Cadena Posterior y Core)
-           - Domingo: Descanso Total
+           2. RUTINA BASE DE 5 DÍAS (BITCHESWORKOUT - LUNES A VIERNES)
+           - Día 1 (L): Glúteos + femorales
+           - Día 2 (M): Espalda y bíceps
+           - Día 3 (X): Cuádriceps + femorales + aductores
+           - Día 4 (J): Espalda + pecho + hombros + tríceps
+           - Día 5 (V): Glúteos + cuádriceps + aductores
+           - Sábado y Domingo: Descanso
            ===================================================================== */
         const routineData = [
             {
                 dayIndex: 1,
-                name: 'Día 1: Lower A',
+                name: 'Día 1: Glúteos + Femorales',
                 short: 'L',
-                focus: 'Glúteos e Isquiosurales (Descanso 2–3m en pesados)',
-                tip: 'En Hip Thrust y RDL descansa 2 a 3 min completos. Si sientes que las manos se cansan antes que las piernas en RDL, usa straps o hazlo en Multipower.',
+                focus: 'Glúteos y femorales (Descanso 2–3m en pesados)',
+                tip: 'Respeta 2 a 3 min de descanso en Hip thrust y Peso muerto rumano. Si el agarre se cansa antes que los femorales en RDL, usa straps.',
                 items: [
-                    { id: 'bw-d1-1', muscle: 'Glúteos', name: 'Hip Thrust (Barra o Máquina)', repTarget: '6–10 reps' },
-                    { id: 'bw-d1-2', muscle: 'Isquiosurales', name: 'Peso Muerto Rumano (RDL) en Multipower / Mancuernas', repTarget: '8–10 reps' },
-                    { id: 'bw-d1-3', muscle: 'Glúteos', name: 'Prensa con Pies Arriba', repTarget: '10–12 reps' },
-                    { id: 'bw-d1-4', muscle: 'Isquiosurales', name: 'Curl de Isquios sentado', repTarget: '10–15 reps' },
-                    { id: 'bw-d1-5', muscle: 'Abductores', name: 'Máquina Abductores', repTarget: '12–15 reps' },
-                    { id: 'bw-d1-6', muscle: 'Gemelos', name: 'Elevaciones de gemelos en Prensa', repTarget: '12–15 reps' }
+                    { id: 'bw2-d1-1', muscle: 'Glúteos', name: 'Hip thrust', defaultSets: 4, repTarget: '4 × 6–10' },
+                    { id: 'bw2-d1-2', muscle: 'Isquiosurales', name: 'Peso muerto rumano', defaultSets: 3, repTarget: '3 × 8–10' },
+                    { id: 'bw2-d1-3', muscle: 'Isquiosurales', name: 'Curl femoral acostado', defaultSets: 3, repTarget: '3 × 10–12' },
+                    { id: 'bw2-d1-4', muscle: 'Glúteos', name: 'Patada de glúteo en polea', defaultSets: 3, repTarget: '3 × 12–15' },
+                    { id: 'bw2-d1-5', muscle: 'Abductores', name: 'Abductores', defaultSets: 3, repTarget: '3 × 15–20' }
                 ]
             },
             {
                 dayIndex: 2,
-                name: 'Día 2: Upper A',
+                name: 'Día 2: Espalda y Bíceps',
                 short: 'M',
-                focus: 'Espalda, Pecho y Hombros (Máxima Estabilidad)',
-                tip: 'Todo este día usa máquinas y poleas guiadas para que puedas progresar peso y fortalecer tus brazos con control total y cero inestabilidad.',
+                focus: 'Tracción en máquinas + trabajo completo de bíceps',
+                tip: 'Las máquinas guiadas de espalda quitan la inestabilidad para que puedas enfocarte en jalar con los dorsales y fortalecer progresivamente tus brazos.',
                 items: [
-                    { id: 'bw-d2-1', muscle: 'Espalda', name: 'Jalón al Pecho Agarre Neutro', repTarget: '8–12 reps' },
-                    { id: 'bw-d2-2', muscle: 'Pectoral', name: 'Press de Pecho en máquina', repTarget: '8–12 reps' },
-                    { id: 'bw-d2-3', muscle: 'Espalda', name: 'Remo con Apoyo en Pecho', repTarget: '8–12 reps' },
-                    { id: 'bw-d2-4', muscle: 'Hombros', name: 'Press de Hombros en Máquina', repTarget: '10–12 reps' },
-                    { id: 'bw-d2-5', muscle: 'Hombros', name: 'Elevaciones Laterales en Polea', repTarget: '12–15 reps' },
-                    { id: 'bw-d2-6', muscle: 'Hombros', name: 'Face Pulls', repTarget: '12–15 reps' }
+                    { id: 'bw2-d2-1', muscle: 'Espalda', name: 'Remo en máquina', defaultSets: 3, repTarget: '3 × 8–12' },
+                    { id: 'bw2-d2-2', muscle: 'Espalda', name: 'Jalón al pecho en máquina', defaultSets: 4, repTarget: '4 × 8–12' },
+                    { id: 'bw2-d2-3', muscle: 'Espalda', name: 'Remo en T con apoyo', defaultSets: 3, repTarget: '3 × 12–15' },
+                    { id: 'bw2-d2-4', muscle: 'Bíceps', name: 'Curl de bíceps', defaultSets: 3, repTarget: '3 × 10–12' },
+                    { id: 'bw2-d2-5', muscle: 'Bíceps', name: 'Curl martillo', defaultSets: 3, repTarget: '3 × 10–12' },
+                    { id: 'bw2-d2-6', muscle: 'Bíceps', name: 'Bíceps en barra (2 enfoques)', defaultSets: 4, repTarget: '4 × 10–12' }
                 ]
             },
             {
                 dayIndex: 3,
-                name: 'Día 3: Lower B + Core',
+                name: 'Día 3: Cuádriceps + Femorales + Aductores',
                 short: 'X',
-                focus: 'Cuádriceps, Glúteo y Abdominales (Pre-Descanso)',
-                tip: 'Hack Squat y Búlgaras con apoyo quitan el límite de fuerza de brazos para exprimir tus piernas al máximo. Abdominales al final antes del descanso de mañana.',
+                focus: 'Tren inferior completo con máxima estabilidad',
+                tip: 'Descansa 2–3 min en Búlgaras en Smith y Hack squat. Mantén la bajada controlada para exprimir el estiramiento sin perder el equilibrio.',
                 items: [
-                    { id: 'bw-d3-1', muscle: 'Cuádriceps', name: 'Sentadilla Hack', repTarget: '6–10 reps' },
-                    { id: 'bw-d3-2', muscle: 'Glúteos', name: 'Sentadilla Búlgara (Enfoque Glúteo)', repTarget: '8–12 reps' },
-                    { id: 'bw-d3-3', muscle: 'Cuádriceps', name: 'Extensiones de Cuádriceps', repTarget: '10–15 reps' },
-                    { id: 'bw-d3-4', muscle: 'Aductores', name: 'Máquina Aductores', repTarget: '12–15 reps' },
-                    { id: 'bw-d3-5', muscle: 'Abdominales', name: 'Crunches en Polea Alta', repTarget: '12–15 reps' },
-                    { id: 'bw-d3-6', muscle: 'Abdominales', name: 'Elevaciones de rodillas en silla romana', repTarget: 'Al fallo técnico' }
+                    { id: 'bw2-d3-1', muscle: 'Cuádriceps', name: 'Sentadilla búlgara en Smith', defaultSets: 3, repTarget: '3 × 8–10' },
+                    { id: 'bw2-d3-2', muscle: 'Cuádriceps', name: 'Hack squat', defaultSets: 4, repTarget: '4 × 8–10' },
+                    { id: 'bw2-d3-3', muscle: 'Cuádriceps', name: 'Extensión de cuádriceps', defaultSets: 3, repTarget: '3 × 12–15' },
+                    { id: 'bw2-d3-4', muscle: 'Isquiosurales', name: 'Curl femoral acostado', defaultSets: 3, repTarget: '3 × 10–12' },
+                    { id: 'bw2-d3-5', muscle: 'Aductores', name: 'Aductores', defaultSets: 3, repTarget: '3 × 12–20' },
+                    { id: 'bw2-d3-6', muscle: 'Gemelos', name: 'Pantorrillas', defaultSets: 3, repTarget: '3 × 12–15' }
                 ]
             },
             {
                 dayIndex: 4,
-                name: 'Día 4: Descanso',
+                name: 'Día 4: Upper Completo',
                 short: 'J',
-                focus: 'Recuperación Muscular y del SNC (Curva SRA)',
-                tip: 'El músculo crece cuando descansas. Prioriza 7–8 horas de sueño, hidratación y cumplir tu meta de proteína (~115 g).',
-                items: []
+                focus: 'Espalda, pecho, hombros y tríceps',
+                tip: 'Usa el botón "Combinar ejercicios" si quieres hacer super serie en los últimos aislamientos (ej. Elevaciones laterales + Tríceps) para mantener la sesión bajo 90 min.',
+                items: [
+                    { id: 'bw2-d4-1', muscle: 'Espalda', name: 'Remo sentado abierto', defaultSets: 4, repTarget: '4 × 10–12' },
+                    { id: 'bw2-d4-2', muscle: 'Espalda', name: 'Jalón neutro', defaultSets: 3, repTarget: '3 × 10–12' },
+                    { id: 'bw2-d4-3', muscle: 'Hombros', name: 'Face pull', defaultSets: 3, repTarget: '3 × 12–15' },
+                    { id: 'bw2-d4-4', muscle: 'Pectoral', name: 'Press de pecho', defaultSets: 3, repTarget: '3 × 8–12' },
+                    { id: 'bw2-d4-5', muscle: 'Hombros', name: 'Elevaciones laterales', defaultSets: 3, repTarget: '3 × 12–15' },
+                    { id: 'bw2-d4-6', muscle: 'Tríceps', name: 'Tríceps en polea', defaultSets: 3, repTarget: '3 × 10–15' },
+                    { id: 'bw2-d4-7', muscle: 'Tríceps', name: 'Tríceps sobre la cabeza', defaultSets: 3, repTarget: '3 × 10–15' }
+                ]
             },
             {
                 dayIndex: 5,
-                name: 'Día 5: Upper B',
+                name: 'Día 5: Glúteos + Cuádriceps + Aductores',
                 short: 'V',
-                focus: 'Torso Completo + Superset de Brazos Controlados',
-                tip: 'El superset final usa Curl Predicador y Polea para que tus brazos ganen fuerza, tono y control rápido sin balanceo.',
+                focus: 'Remate de tren inferior antes del fin de semana',
+                tip: 'Última sesión de la semana: da todo en Hip thrust y Prensa horizontal con descansos de 2–3 min, luego tendrás sábado y domingo completos para recuperar.',
                 items: [
-                    { id: 'bw-d5-1', muscle: 'Espalda', name: 'Dominadas Asistidas en Máquina / Jalón al pecho', repTarget: '8–12 reps' },
-                    { id: 'bw-d5-2', muscle: 'Pectoral', name: 'Press Inclinado en Multipower (Smith)', repTarget: '8–12 reps' },
-                    { id: 'bw-d5-3', muscle: 'Espalda', name: 'Remo en polea baja apoyado', repTarget: '10–12 reps' },
-                    { id: 'bw-d5-4', muscle: 'Hombros', name: 'Pájaros en Pec-Deck Inverso', repTarget: '12–15 reps' },
-                    {
-                        id: 'bw-d5-5',
-                        isSuperset: true,
-                        title: 'Superset Brazos (Control Total)',
-                        subExercises: [
-                            { id: 'bw-d5-5a', label: 'a', muscle: 'Bíceps', name: 'Curl Predicador en Máquina / Banco', repTarget: '10–12 reps' },
-                            { id: 'bw-d5-5b', label: 'b', muscle: 'Tríceps', name: 'Extensión Tríceps en polea', repTarget: '10–15 reps' }
-                        ]
-                    }
+                    { id: 'bw2-d5-1', muscle: 'Glúteos', name: 'Hip thrust', defaultSets: 3, repTarget: '3 × 8–12' },
+                    { id: 'bw2-d5-2', muscle: 'Cuádriceps', name: 'Prensa horizontal', defaultSets: 4, repTarget: '4 × 10–12' },
+                    { id: 'bw2-d5-3', muscle: 'Glúteos', name: 'Extensión de cadera a 45°', defaultSets: 3, repTarget: '3 × 10–15' },
+                    { id: 'bw2-d5-4', muscle: 'Cuádriceps', name: 'Extensión de cuádriceps', defaultSets: 3, repTarget: '3 × 12–15' },
+                    { id: 'bw2-d5-5', muscle: 'Aductores', name: 'Aductores', defaultSets: 3, repTarget: '3 × 12–20' },
+                    { id: 'bw2-d5-6', muscle: 'Abductores', name: 'Abductores', defaultSets: 3, repTarget: '3 × 15–20' },
+                    { id: 'bw2-d5-7', muscle: 'Gemelos', name: 'Pantorrillas', defaultSets: 3, repTarget: '3 × 12–15' }
                 ]
             },
             {
                 dayIndex: 6,
-                name: 'Día 6: Lower C + Core',
+                name: 'Día 6: Descanso',
                 short: 'S',
-                focus: 'Glúteo Focus, Cadena Posterior y Core',
-                tip: 'Última sesión de la semana enfocada en glúteo completo (contracción + estiramiento + abducción). Respeta 2–3 min de descanso en Hip Thrust y Step-Ups.',
-                items: [
-                    { id: 'bw-d6-1', muscle: 'Glúteos', name: 'Hip Thrust (Barra o Máquina)', repTarget: '8–12 reps' },
-                    { id: 'bw-d6-2', muscle: 'Glúteos', name: 'Step-Ups Altos (Con Apoyo)', repTarget: '10–12 reps' },
-                    { id: 'bw-d6-3', muscle: 'Glúteos', name: 'Patada de Glúteo en Polea', repTarget: '12–15 reps' },
-                    { id: 'bw-d6-4', muscle: 'Isquiosurales', name: 'Curl de Isquios tumbado', repTarget: '10–15 reps' },
-                    { id: 'bw-d6-5', muscle: 'Abductores', name: 'Máquina Abductores', repTarget: '12–15 reps' },
-                    { id: 'bw-d6-6', muscle: 'Abdominales', name: 'Crunches en Máquina', repTarget: '12–15 reps' }
-                ]
+                focus: 'Recuperación Muscular y del SNC (Fin de semana)',
+                tip: 'El músculo crece cuando descansas. Prioriza hidratación, sueño y cumplir tu meta diaria de proteína (~115 g).',
+                items: []
             },
             {
                 dayIndex: 0,
-                name: 'Día 7: Descanso Total',
+                name: 'Día 7: Descanso',
                 short: 'D',
-                focus: 'Recuperación Completa para la Próxima Semana',
-                tip: 'Descanso completo para recargar glucógeno y llegar al 100% el lunes.',
+                focus: 'Recuperación Total para Iniciar el Lunes al 100%',
+                tip: 'Descanso completo para recargar glucógeno y llegar fresca al Día 1 de Glúteos + Femorales.',
                 items: []
             }
         ];
@@ -848,16 +841,12 @@
                     <button onclick="resetDayLayout()" title="Restaurar ejercicios originales de este día" class="px-2.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700/60 text-xs font-semibold flex items-center gap-1 active:scale-95 transition">
                         <i class="ph ph-arrow-counter-clockwise text-sm"></i>
                     </button>
-                `;
-            }
-            actionsEl.innerHTML = html;
-        }
-
-        function ensureSlotInputs(slotId, exerciseName) {
+        function ensureSlotInputs(slotId, exerciseName, defaultSets = 3) {
             const todayStr = getTodayStr();
             const key = `${slotId}::${exerciseName}`;
             if (activeExerciseInputs[key]) return activeExerciseInputs[key];
 
+            const targetCount = Math.max(1, parseInt(defaultSets, 10) || 3);
             const logFromToday = trainingLogs.find(log => log.exercise === exerciseName && log.date === todayStr);
             const lastLog = [...trainingLogs].reverse().find(log => log.exercise === exerciseName);
 
@@ -868,17 +857,21 @@
                     rir: s.rir ?? '2'
                 }));
             } else if (lastLog && lastLog.sets && lastLog.sets.length > 0) {
-                activeExerciseInputs[key] = lastLog.sets.map(s => ({
-                    weight: s.weight ?? '',
-                    reps: '',
-                    rir: s.rir ?? '2'
-                }));
+                // Ajusta la cantidad de filas al objetivo de series de este día (3 o 4) recordando el último peso
+                activeExerciseInputs[key] = Array.from({ length: targetCount }, (_, i) => {
+                    const ref = lastLog.sets[Math.min(i, lastLog.sets.length - 1)];
+                    return {
+                        weight: ref.weight ?? '',
+                        reps: '',
+                        rir: ref.rir ?? '2'
+                    };
+                });
             } else {
-                activeExerciseInputs[key] = [
-                    { weight: '', reps: '', rir: '2' },
-                    { weight: '', reps: '', rir: '1' },
-                    { weight: '', reps: '', rir: '1' }
-                ];
+                activeExerciseInputs[key] = Array.from({ length: targetCount }, (_, i) => ({
+                    weight: '',
+                    reps: '',
+                    rir: i < targetCount - 2 ? '2' : '1'
+                }));
             }
             return activeExerciseInputs[key];
         }
@@ -924,7 +917,7 @@
         function buildExerciseBodyHTML(slot, isInsideSuperset = false) {
             const exerciseName = getActiveExerciseName(slot);
             const key = `${slot.id}::${exerciseName}`;
-            const sets = ensureSlotInputs(slot.id, exerciseName);
+            const sets = ensureSlotInputs(slot.id, exerciseName, slot.defaultSets || 3);
             const bwOnly = isBodyweightOnlyExercise(exerciseName);
             const canRemove = sets.length > 1;
 
@@ -1266,6 +1259,7 @@
                     label: 'b',
                     muscle: slotB.muscle,
                     name: getActiveExerciseName(slotB),
+                    defaultSets: slotB.defaultSets || 3,
                     repTarget: slotB.repTarget || ''
                 };
                 items.splice(idxB, 1);
@@ -1281,7 +1275,8 @@
                     label: 'b',
                     muscle: muscleB,
                     name: exBName,
-                    repTarget: '10–15 reps'
+                    defaultSets: 3,
+                    repTarget: '3 × 10–15'
                 };
             }
 
@@ -1299,6 +1294,7 @@
                         label: 'a',
                         muscle: slotA.muscle,
                         name: exAName,
+                        defaultSets: slotA.defaultSets || 3,
                         repTarget: slotA.repTarget || ''
                     },
                     subB
@@ -1323,6 +1319,7 @@
                 id: sub.id,
                 muscle: sub.muscle,
                 name: getActiveExerciseName(sub),
+                defaultSets: sub.defaultSets || 3,
                 repTarget: sub.repTarget || ''
             }));
 
